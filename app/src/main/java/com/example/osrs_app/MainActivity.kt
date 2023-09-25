@@ -5,12 +5,9 @@ import android.os.Bundle
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProvider
-import com.example.osrs_app.network.OSRSApi
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import com.example.osrs_app.Overview.OverviewViewModel
+
+
 
 class MainActivity : AppCompatActivity() {
 
@@ -25,43 +22,30 @@ class MainActivity : AppCompatActivity() {
         textView2 = findViewById(R.id.textView2)
 
         // Create an instance of the ViewModel
-        val viewModel = ViewModelProvider(this).get(OverviewViewModel::class.java)
+        val viewModel = ViewModelProvider(this)[OverviewViewModel::class.java]
         val itemIdToFind = 9297 // Replace with the desired item ID
 
+        viewModel.fetchLatestData()
+        viewModel.fetchMappingInfo()
 
-        // Make the Retrofit API request and update the UI
-        GlobalScope.launch(Dispatchers.IO) {
-            try {
-                val latestData = OSRSApi.retrofitService.getLatestPriceData()
-                val mappingInfo = OSRSApi.retrofitService.getMappingData()
-
-                // Find the item in latestData by its ID
+        // Observe latestData, mappingInfo, and error LiveData properties
+        viewModel.latestData.observe(this) { latestData ->
+            if (latestData != null) {
                 val item = latestData.data[itemIdToFind.toString()]
+                // Update the UI with item data
+                textView.text = item.toString()
 
-                // Find the item in mappingInfo by its ID
-                val itemFromMapping = mappingInfo.find { it.id == itemIdToFind }
-                val itemname = itemFromMapping?.name
 
-                textView2.text = itemname
-
-                // Update the UI on the main thread
-                withContext(Dispatchers.Main) {
-                    if (item != null) {
-                        val text = "High: ${item.high}, Low: ${item.low}"
-                        textView.text = text
-                    } else {
-                        textView.text = "OSRS data not found"
-                    }
-                }
-            } catch (e: Exception) {
-                // Handle any exceptions here
-                e.printStackTrace()
-                withContext(Dispatchers.Main) {
-                    textView.text = "Error: ${e.message}"
-                }
+            } else {
+                // Handle the case when latestData is null
+                textView.text = "test2"
             }
+
         }
     }
 }
+
+
+
 
 
