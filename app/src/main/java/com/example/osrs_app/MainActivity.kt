@@ -3,12 +3,11 @@ package com.example.osrs_app
 
 import android.os.Bundle
 import android.widget.TextView
-import androidx.appcompat.app.AppCompatActivity
-import com.example.osrs_app.network.ItemPriceDifference
-import com.example.osrs_app.network.OSRSLatestPriceData
-import com.example.osrs_app.overview.OverviewViewModel
 import androidx.activity.viewModels
-import com.example.osrs_app.network.MappingData
+import androidx.appcompat.app.AppCompatActivity
+import com.example.osrs_app.itemMods.calculateROI
+import com.example.osrs_app.network.ItemPriceDifference
+import com.example.osrs_app.overview.OverviewViewModel
 
 
 class MainActivity : AppCompatActivity() {
@@ -70,11 +69,13 @@ class MainActivity : AppCompatActivity() {
                     // Check if latestData is not null before updating
                     if (mappingInfo != null) {
                         val stringBuilder = StringBuilder()
+                        var roi = 0.0
                         if (top10Items != null) {
                             for ((index, item) in top10Items.withIndex()) {
                                 val itemId = item.itemId
                                 val itemHigh = item.high
                                 val itemLow = item.low
+                                roi = calculateROI(item)
                                 val itemName =
                                     mappingInfo?.find { it.id.toString() == itemId }?.name
                                 stringBuilder.append("${index + 1}. Item ID: $itemId, Name: $itemName, Price Difference:${itemHigh - itemLow}\n")
@@ -82,6 +83,7 @@ class MainActivity : AppCompatActivity() {
                         }
 
                         textView.text = stringBuilder.toString()
+                        textView2.text = roi.toString()
 
                     }
                 }
