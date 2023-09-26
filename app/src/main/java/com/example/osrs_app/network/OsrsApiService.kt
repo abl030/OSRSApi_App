@@ -24,25 +24,24 @@ private val retrofit = Retrofit.Builder()
     .build()
 
 /**
- * A public interface that exposes the [getLatestPriceData] method
+ * The actual API itself, exposing two functions (at the moment)
+ * to get the latest price data and the latest mapping data
  */
 interface OSRSApiService {
     /**
-     * Returns the latest OSRS data, and this method can be called from a Coroutine.
-     * The @GET annotation indicates the endpoint to request with the GET HTTP method.
+     * Returns the latest OSRS data, and this method should be called from a Coroutine.
      */
     @GET("latest")
     suspend fun getLatestPriceData(): OSRSLatestPriceData
     /**
-     * Returns the OSRS item mapping data, and this method can be called from a Coroutine.
-     * The @GET annotation indicates the endpoint to request with the GET HTTP method.
+     * Returns the OSRS item mapping data as a list of mapping data objects
      */
     @GET("mapping")
     suspend fun getMappingData(): List<MappingData>
 }
 
 /**
- * Define your data classes based on the structure of the JSON response from the OSRS API.
+ * Define the data classes
  */
 data class OSRSLatestPriceData(
     val data: Map<String, OSRSItem>
@@ -67,6 +66,13 @@ data class MappingData(
     val limit: Int?
 )
 
+// Data class to hold item ID and price difference
+data class ItemPriceDifference(
+    val itemId: String,
+    val high: Int,
+    val low: Int,
+    val priceDifference: Int
+)
 
 
     /**

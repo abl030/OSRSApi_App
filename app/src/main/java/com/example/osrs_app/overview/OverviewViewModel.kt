@@ -1,4 +1,4 @@
-package com.example.osrs_app.Overview
+package com.example.osrs_app.overview
 
 
 import androidx.lifecycle.LiveData
@@ -11,13 +11,14 @@ import com.example.osrs_app.network.OSRSLatestPriceData
 import kotlinx.coroutines.launch
 
 
+
 /**
  * Based upon https://github.com/google-developer-training/android-basics-kotlin-mars-photos-app/tree/main
- * I did the course to work out how to do viewmodels. Networking cannot be called from activity main, so I had to figure this out.
+ * I did the course to work out how to do view-models. Networking cannot be called from activity main, so I had to figure this out.
  */
 class OverviewViewModel : ViewModel() {
     //make a price object using the api class.
-    //need an immutable public access class, and a mutable private internal object we can work on
+    //need an immutable public access object, and a mutable private internal object we can work on
     private val _latestData = MutableLiveData<OSRSLatestPriceData>()
     val latestData: LiveData<OSRSLatestPriceData> = _latestData
 
@@ -29,6 +30,7 @@ class OverviewViewModel : ViewModel() {
     private val _error = MutableLiveData<String>()
     val error: LiveData<String> = _error
 
+    //calls the API to populate the latest price data
     fun fetchLatestData() {
         viewModelScope.launch {
             try {
@@ -40,6 +42,7 @@ class OverviewViewModel : ViewModel() {
         }
     }
 
+    //calls the api to populate the mapping data
     fun fetchMappingInfo() {
         viewModelScope.launch {
             try {
