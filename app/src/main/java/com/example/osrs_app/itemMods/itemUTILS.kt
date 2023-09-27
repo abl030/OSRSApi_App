@@ -63,8 +63,8 @@ fun combineLatestAndMappingData(latestdata: OSRSLatestPriceData, mappingData: Li
 fun sortByValue(combinedList: List<CombinedItem>, value: String = "ROI"): List<CombinedItem> {
     val sortedList = when (value) {
         "ROI" -> combinedList.sortedByDescending { it.roi }
-        "Low" -> combinedList.sortedBy { it.low }
-        "High" -> combinedList.sortedBy { it.high }
+        "Low" -> combinedList.sortedByDescending { it.low }
+        "High" -> combinedList.sortedByDescending { it.high }
         "Price Difference" -> combinedList.sortedByDescending { it.priceDifference }
         else -> combinedList.sortedByDescending { it.roi }
     }

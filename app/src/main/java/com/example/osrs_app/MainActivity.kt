@@ -38,7 +38,8 @@ class MainActivity : AppCompatActivity() {
                     // Check if latestData is not null before updating
                     if (mappingInfo != null) {
                         val combinedlist = combineLatestAndMappingData(latestData, mappingInfo)
-                        textView.text = combinedlist.toString()
+                        val combinedlist2 = combinedlist.sortedByDescending { it.roi }
+                        textView.text = combinedlist2.toString()
 
                     }
 
