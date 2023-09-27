@@ -1,10 +1,9 @@
 package com.example.osrs_app.itemMods
 
-import com.example.osrs_app.network.ItemPriceDifference
-import com.example.osrs_app.network.OSRSItem
+import com.example.osrs_app.overview.OSRSItem
 
-fun calculateROI(item: ItemPriceDifference): Double {
-    val high = item.high ?: 0
+fun calculateROI(item: OSRSItem): Double {
+    val high = item.high?: 0
     val low = item.low ?: 0
 
     // Ensure that the denominator (low) is not zero to avoid division by zero
@@ -16,3 +15,4 @@ fun calculateROI(item: ItemPriceDifference): Double {
         Double.NaN
     }
 }
+

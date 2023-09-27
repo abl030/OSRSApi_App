@@ -6,7 +6,7 @@ import android.widget.TextView
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import com.example.osrs_app.itemMods.calculateROI
-import com.example.osrs_app.network.ItemPriceDifference
+import com.example.osrs_app.overview.CombinedItem
 import com.example.osrs_app.overview.OverviewViewModel
 
 
@@ -30,66 +30,19 @@ class MainActivity : AppCompatActivity() {
         //actually grab some data, remember to do this every view.
         viewModel.fetchLatestData()
         viewModel.fetchMappingInfo()
+        viewModel.combineLatestAndMappingData()
 
 
-        // Observe changes in the latestData LiveData
-        viewModel.latestData.observe(this) { latestData ->
-            // Check if latestData is not null before updating
-            if (latestData != null) {
+        // Observe changes in the cobmineddata LiveData
+        viewModel.combinedList.observe(this) { combinedList ->
+            // Update the UI
+            textView.text = combinedList.toString()
 
-                // Step 2: Filter by Time (last 24 hours)
-                val currentTimeMillis =
-                    System.currentTimeMillis() / 1000 // Convert to Unix epoch seconds
-                val timeThreshold =
-                    currentTimeMillis - (24 * 60 * 60) // Subtract 24 hours in seconds
-
-                //Step 2a. Make sure an item has been bought and sold in last 24 hours.
-                val filteredData = latestData?.data?.filter { item ->
-                    (item.value.highTime ?: 0) >= timeThreshold && (item.value.lowTime
-                        ?: 0) >= timeThreshold
-                }
-
-                // Step 3: Calculate Price Differences
-                val itemsWithPriceDifferences = filteredData?.map { item ->
-                    val high = item.value.high ?: 0
-                    val low = item.value.low ?: 0
-                    val priceDifference = high - low
-                    ItemPriceDifference(item.key, high, low, priceDifference)
-                }
-
-                // Step 4: Sort by Price Difference (descending order)
-                val sortedItems =
-                    itemsWithPriceDifferences?.sortedByDescending { it.priceDifference }
-
-                // Step 5: Get the Top 10
-                val top10Items = sortedItems?.take(10)
-
-                // Access mappingInfo data here
-                viewModel.mappingInfo.observe(this) { mappingInfo ->
-                    // Check if latestData is not null before updating
-                    if (mappingInfo != null) {
-                        val stringBuilder = StringBuilder()
-                        var roi = 0.0
-                        if (top10Items != null) {
-                            for ((index, item) in top10Items.withIndex()) {
-                                val itemId = item.itemId
-                                val itemHigh = item.high
-                                val itemLow = item.low
-                                roi = calculateROI(item)
-                                val itemName =
-                                    mappingInfo?.find { it.id.toString() == itemId }?.name
-                                stringBuilder.append("${index + 1}. Item ID: $itemId, Name: $itemName, Price Difference:${itemHigh - itemLow}\n")
-                            }
-                        }
-
-                        textView.text = stringBuilder.toString()
-                        textView2.text = roi.toString()
-
-                    }
-                }
-            }
         }
     }
+
+
+
 }
 
 

@@ -1,5 +1,7 @@
 package com.example.osrs_app.network
 
+import com.example.osrs_app.overview.MappingData
+import com.example.osrs_app.overview.OSRSLatestPriceData
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import retrofit2.Retrofit
@@ -41,41 +43,6 @@ interface OSRSApiService {
 }
 
 /**
- * Define the data classes
- */
-data class OSRSLatestPriceData(
-    val data: Map<String, OSRSItem>
-)
-
-data class OSRSItem(
-    val high: Int?,
-    val highTime: Long?,
-    val low: Int?,
-    val lowTime: Long?,
-)
-
-data class MappingData(
-    val highalch: Int?,
-    val members: Boolean?,
-    val name: String?,
-    val examine: String?,
-    val id: Int?,
-    val value: Int?,
-    val icon: String?,
-    val lowalch: Int?,
-    val limit: Int?
-)
-
-// Data class to hold item ID and price difference
-data class ItemPriceDifference(
-    val itemId: String,
-    val high: Int,
-    val low: Int,
-    val priceDifference: Int
-)
-
-
-    /**
      * A public Api object that exposes the lazy-initialized Retrofit service
      */
     object OSRSApi {
