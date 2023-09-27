@@ -5,7 +5,6 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.osrs_app.itemMods.calculateROI
 import com.example.osrs_app.network.OSRSApi
 import kotlinx.coroutines.launch
 
@@ -56,37 +55,5 @@ class OverviewViewModel : ViewModel() {
             }
         }
     }
-
-    //rewrite the below so it saves the combined list to the above new variable
-    fun combineLatestAndMappingData() {
-        val latestDataValue = _latestData.value
-        val mappingInfoValue = _mappingInfo.value
-
-        if (latestDataValue != null && mappingInfoValue != null) {
-            val combinedList = latestDataValue.data.keys.mapNotNull { itemId ->
-                val item = latestDataValue.data[itemId]
-                val mappingData = mappingInfoValue.find { mappingItem ->
-                    mappingItem.id == itemId.toInt()
-                }
-                if (item != null && mappingData != null) {
-                    CombinedItem(
-                        itemId,
-                        item.high,
-                        item.low,
-                        item.high?.minus(item.low ?: 0),
-                        calculateROI(item) * 100 / 100,
-                        mappingData.name,
-                        mappingData.examine,
-                        mappingData.icon,
-                        mappingData.limit
-                    )
-                } else {
-                    null // Exclude items without valid data
-                }
-            }
-
-            // Step 6: Update the LiveData
-            _combinedList.value = combinedList
-        }
-    }
 }
+

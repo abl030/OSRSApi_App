@@ -38,3 +38,11 @@ data class CombinedItem(
     val icon: String?,
     val limit: Int?
 )
+
+// Data class to hold item ID and price difference
+data class ItemPriceDifference(
+    val itemId: String,
+    val high: Int,
+    val low: Int,
+    val priceDifference: Int
+)
