@@ -6,6 +6,7 @@ import android.widget.TextView
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import com.example.osrs_app.itemMods.combineLatestAndMappingData
+import com.example.osrs_app.itemMods.sortByTime
 import com.example.osrs_app.overview.OverviewViewModel
 
 
@@ -37,7 +38,7 @@ class MainActivity : AppCompatActivity() {
                 viewModel.mappingInfo.observe(this) { mappingInfo ->
                     // Check if latestData is not null before updating
                     if (mappingInfo != null) {
-                        val combinedlist = combineLatestAndMappingData(latestData, mappingInfo)
+                        val combinedlist = sortByTime(combineLatestAndMappingData(latestData, mappingInfo))
                         val combinedlist2 = combinedlist.sortedByDescending { it.roi }
                         textView.text = combinedlist2.toString()
 
