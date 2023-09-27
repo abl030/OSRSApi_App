@@ -30,7 +30,9 @@ data class MappingData(
 data class CombinedItem(
     val itemId: String?,
     val high: Int?,
+    val highTime: Long?,
     val low: Int?,
+    val lowTime: Long?,
     val priceDifference: Int?,
     val roi: Double,
     val name: String?,

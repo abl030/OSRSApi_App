@@ -28,10 +28,6 @@ class OverviewViewModel : ViewModel() {
     private val _error = MutableLiveData<String>()
     val error: LiveData<String> = _error
 
-    //make a combined list of items class
-    private val _combinedList = MutableLiveData<List<CombinedItem>>()
-    val combinedList: LiveData<List<CombinedItem>> = _combinedList
-
     //calls the API to populate the latest price data
     fun fetchLatestData() {
         viewModelScope.launch {
