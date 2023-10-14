@@ -39,6 +39,7 @@ class MainActivity : AppCompatActivity() {
         viewModel.fetchLatestData()
         viewModel.fetchMappingInfo()
 
+
         // Observe changes in the latestData LiveData
         viewModel.latestData.observe(this) { latestData ->
             if (latestData != null) {
@@ -107,7 +108,9 @@ class MainActivity : AppCompatActivity() {
             }
         }
     }
+
 }
+
 
 
 

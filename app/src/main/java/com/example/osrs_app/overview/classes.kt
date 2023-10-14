@@ -1,5 +1,7 @@
 package com.example.osrs_app.overview
 
+import java.io.Serializable
+
 /**
  * Define the data classes
  */
@@ -47,4 +49,4 @@ data class ItemPriceDifference(
     val priceDifference: Int,
     val ROI: Int,
     val icon: String?,
-)
+): Serializable

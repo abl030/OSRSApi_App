@@ -1,5 +1,7 @@
 package com.example.osrs_app.overview
 
+
+import android.content.Intent
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -28,7 +30,6 @@ class ItemPriceDifferenceAdapter(private val itemList: List<ItemPriceDifference>
         return itemList.size
     }
 
-
     inner class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         private val nameTextView: TextView = itemView.findViewById(R.id.textName)
         private val priceDifferenceTextView: TextView =
@@ -50,6 +51,19 @@ class ItemPriceDifferenceAdapter(private val itemList: List<ItemPriceDifference>
                     .load("https://oldschool.runescape.wiki/images/${icon}?format=png")
                     .into(iconImageView)
             }
+
+            itemView.setOnClickListener {
+                val intent = Intent(itemView.context, ItemDetailActivity::class.java)
+                intent.putExtra("ITEM_NAME", item.name)
+                intent.putExtra("PRICE_DIFFERENCE", item.priceDifference)
+                intent.putExtra("ROI", item.ROI)
+                intent.putExtra("ICON_URL", item.icon)
+                itemView.context.startActivity(intent)
+
+        }
+
         }
     }
+
+
 }
