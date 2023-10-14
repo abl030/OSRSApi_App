@@ -1,6 +1,7 @@
 package com.example.osrs_app.itemMods
 
 import com.example.osrs_app.overview.CombinedItem
+import com.example.osrs_app.overview.ItemPriceDifference
 import com.example.osrs_app.overview.MappingData
 import com.example.osrs_app.overview.OSRSItem
 import com.example.osrs_app.overview.OSRSLatestPriceData
@@ -58,9 +59,9 @@ fun combineLatestAndMappingData(latestdata: OSRSLatestPriceData, mappingData: Li
     }
 }
 
-//write a function to sort the list by any list values chosen as an input
+//a function to sort the list by any list values chosen as an input
 //The list can be sorted by any value, but the default is ROI
-fun sortByValue(combinedList: List<CombinedItem>, value: String = "ROI"): List<CombinedItem> {
+fun sortByValueDesc(combinedList: List<CombinedItem>, value: String = "ROI"): List<CombinedItem> {
     val sortedList = when (value) {
         "ROI" -> combinedList.sortedByDescending { it.roi }
         "Low" -> combinedList.sortedByDescending { it.low }
@@ -72,7 +73,7 @@ fun sortByValue(combinedList: List<CombinedItem>, value: String = "ROI"): List<C
 }
 
 
-//A function to sort the Combined list by time, Low and High time is in seconds since epoch
+//A function to sort/filter the Combined list by time, Low and High time is in seconds since epoch
 //The latest high and low time need to be in the last 24 hours
 fun sortByTime(combinedList: List<CombinedItem>): List<CombinedItem> {
     val currentTimeMillis = System.currentTimeMillis() / 1000 // Convert to Unix epoch seconds
@@ -88,4 +89,16 @@ fun sortByTime(combinedList: List<CombinedItem>): List<CombinedItem> {
 fun getTop10(combinedList: List<CombinedItem>): List<CombinedItem> {
     val top10List = combinedList.take(10)
     return top10List
+}
+
+//takes in a combined list as input and returns a new list with just item name, ROI and price difference
+fun PriceList(combinedList: List<CombinedItem>): List<ItemPriceDifference> {
+    var PriceList = List(combinedList.size) { index ->
+        ItemPriceDifference(
+            combinedList[index].name,
+            combinedList[index].priceDifference ?: 0,
+            combinedList[index].roi
+        )
+    }
+    return PriceList
 }

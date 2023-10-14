@@ -43,8 +43,7 @@ data class CombinedItem(
 
 // Data class to hold item ID and price difference
 data class ItemPriceDifference(
-    val itemId: String,
-    val high: Int,
-    val low: Int,
-    val priceDifference: Int
+    val name: String?,
+    val priceDifference: Int,
+    val ROI: Double,
 )

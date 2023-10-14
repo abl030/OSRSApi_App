@@ -72,4 +72,5 @@ dependencies {
 
     // Retrofit with Moshi Converter
     implementation ("com.squareup.retrofit2:converter-moshi:2.9.0")
+    implementation ("androidx.recyclerview:recyclerview:1.2.0")
 }

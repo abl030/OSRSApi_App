@@ -5,8 +5,12 @@ import android.os.Bundle
 import android.widget.TextView
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
+import com.example.osrs_app.itemMods.PriceList
 import com.example.osrs_app.itemMods.combineLatestAndMappingData
 import com.example.osrs_app.itemMods.sortByTime
+import com.example.osrs_app.overview.ItemPriceDifferenceAdapter
 import com.example.osrs_app.overview.OverviewViewModel
 
 
@@ -21,6 +25,9 @@ class MainActivity : AppCompatActivity() {
 
         textView = findViewById(R.id.textView)
         textView2 = findViewById(R.id.textView2)
+
+        lateinit var recyclerView: RecyclerView
+        lateinit var itemPriceDifferenceAdapter: ItemPriceDifferenceAdapter
 
         // Create an instance of the ViewModel
         //specifically why this works and not val viewModel = ViewModelProvider(this)[OverviewViewModel::class.java]
@@ -38,9 +45,17 @@ class MainActivity : AppCompatActivity() {
                 viewModel.mappingInfo.observe(this) { mappingInfo ->
                     // Check if latestData is not null before updating
                     if (mappingInfo != null) {
-                        val combinedlist = sortByTime(combineLatestAndMappingData(latestData, mappingInfo))
-                        val combinedlist2 = combinedlist.sortedByDescending { it.roi }
-                        textView.text = combinedlist2.toString()
+                        var combinedlist = sortByTime(combineLatestAndMappingData(latestData, mappingInfo))
+                        combinedlist = combinedlist.sortedByDescending { it.roi }
+                        combinedlist = combinedlist.take(10)
+                        var combinedlist2 = PriceList(combinedlist)
+                        //textView.text = combinedlist2.toString()
+
+                        recyclerView = findViewById(R.id.recyclerView)
+                        itemPriceDifferenceAdapter = ItemPriceDifferenceAdapter(combinedlist2) // Replace with your item list
+
+                        recyclerView.adapter = itemPriceDifferenceAdapter
+                        recyclerView.layoutManager = LinearLayoutManager(this)
 
                     }
 
@@ -50,70 +65,5 @@ class MainActivity : AppCompatActivity() {
     }
 }
 
-
-        /*// Observe changes in the latestData LiveData
-        viewModel.latestData.observe(this) { latestData ->
-            // Check if latestData is not null before updating
-            if (latestData != null) {
-
-                // Step 2: Filter by Time (last 24 hours)
-                val currentTimeMillis =
-                    System.currentTimeMillis() / 1000 // Convert to Unix epoch seconds
-                val timeThreshold =
-                    currentTimeMillis - (24 * 60 * 60) // Subtract 24 hours in seconds
-
-                //Step 2a. Make sure an item has been bought and sold in last 24 hours.
-                val filteredData = latestData?.data?.filter { item ->
-                    (item.value.highTime ?: 0) >= timeThreshold && (item.value.lowTime
-                        ?: 0) >= timeThreshold
-                }
-
-                // Step 3: Calculate Price Differences
-                val itemsWithPriceDifferences = filteredData?.map { item ->
-                    val high = item.value.high ?: 0
-                    val low = item.value.low ?: 0
-                    val priceDifference = high - low
-                    ItemPriceDifference(item.key, high, low, priceDifference)
-                }
-
-                // Step 4: Sort by Price Difference (descending order)
-                val sortedItems =
-                    itemsWithPriceDifferences?.sortedByDescending { it.priceDifference }
-
-                // Step 5: Get the Top 10
-                val top10Items = sortedItems?.take(10)
-
-                // Access mappingInfo data here
-                viewModel.mappingInfo.observe(this) { mappingInfo ->
-                    // Check if latestData is not null before updating
-                    if (mappingInfo != null) {
-                        val stringBuilder = StringBuilder()
-                        var roi = 0.0
-                        if (top10Items != null) {
-                            for ((index, item) in top10Items.withIndex()) {
-                                val itemId = item.itemId
-                                val itemHigh = item.high
-                                val itemLow = item.low
-                                null
-                                val itemName =
-                                    mappingInfo?.find { it.id.toString() == itemId }?.name
-                                stringBuilder.append("${index + 1}. Item ID: $itemId, Name: $itemName, Price Difference:${itemHigh - itemLow}\n")
-                            }
-                        }
-
-                        textView.text = stringBuilder.toString()
-                        textView2.text = roi.toString()
-
-                    }
-                }
-            }
-
-        }
-    }
-
-}
-
-
-*/
 
 
