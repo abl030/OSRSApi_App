@@ -10,8 +10,8 @@ import com.bumptech.glide.Glide
 import com.example.osrs_app.R
 import com.example.osrs_app.itemMods.K
 
-class ItemPriceDifferenceAdapter(private val itemList: List<ItemPriceDifference>) :
-    RecyclerView.Adapter<ItemPriceDifferenceAdapter.ViewHolder>() {
+class ItemPriceDifferenceAdapter2(private val itemList: List<ItemPriceDifference>) :
+    RecyclerView.Adapter<ItemPriceDifferenceAdapter2.ViewHolder>() {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         val view =
