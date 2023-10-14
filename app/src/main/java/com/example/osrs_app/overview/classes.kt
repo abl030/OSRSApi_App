@@ -34,7 +34,7 @@ data class CombinedItem(
     val low: Int?,
     val lowTime: Long?,
     val priceDifference: Int?,
-    val roi: Double,
+    val roi: Int,
     val name: String?,
     val examine: String?,
     val icon: String?,
@@ -45,5 +45,6 @@ data class CombinedItem(
 data class ItemPriceDifference(
     val name: String?,
     val priceDifference: Int,
-    val ROI: Double,
+    val ROI: Int,
+    val icon: String?,
 )

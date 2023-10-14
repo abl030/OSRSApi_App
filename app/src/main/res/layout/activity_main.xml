@@ -11,36 +11,27 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:padding="16dp"
+
         android:layout_alignParentTop="true">
 
         <TextView
             android:id="@+id/textView"
-            android:layout_width="343dp"
-            android:layout_height="558dp"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
             android:layout_gravity="center_horizontal"
-            android:text="OSRS Data: "
-            android:textSize="18sp"
+            android:text="Highest ROI Items:"
+            android:textSize="24sp"
             android:textStyle="bold" />
 
-        <TextView
-            android:id="@+id/textView2"
-            android:layout_width="178dp"
-            android:layout_height="196dp"
-            android:layout_gravity="center_horizontal"
-            android:text="OSRS Data: "
-            android:textSize="18sp"
-            android:textStyle="bold" />
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/recyclerView"
+            android:layout_width="match_parent"
+            android:layout_height="384dp"
+            android:clipToPadding="false"
+            android:scrollbars="vertical" />
 
     </LinearLayout>
 
     <!-- Second Layout (RecyclerView) -->
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/recyclerView"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:padding="16dp"
-        android:clipToPadding="false"
-        android:scrollbars="vertical" />
 
 </RelativeLayout>

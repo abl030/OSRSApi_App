@@ -2,23 +2,40 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:orientation="vertical">
+    android:orientation="horizontal"
+    android:background="@drawable/border_drawable"
+    >
+<ImageView
+        android:layout_width="67dp"
+        android:layout_height="match_parent"
+        android:id="@+id/itemIcon" />
 
-    <TextView
-        android:id="@+id/textName"
-        android:layout_width="wrap_content"
+    <LinearLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Name: " />
+        android:orientation="vertical"
+        android:background="@drawable/border_drawable">
 
-    <TextView
-        android:id="@+id/textPriceDifference"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Price Difference: " />
+        <TextView
+            android:id="@+id/textName"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Item Name: "
+            android:textStyle="bold"
+            android:textSize="20sp"/>
 
-    <TextView
-        android:id="@+id/textROI"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="ROI: " />
+        <TextView
+            android:id="@+id/textPriceDifference"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Price Difference: "
+            android:textSize="20sp"/>
+
+        <TextView
+            android:id="@+id/textROI"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="ROI: "
+            android:textSize="20sp"/>
+    </LinearLayout>
 </LinearLayout>

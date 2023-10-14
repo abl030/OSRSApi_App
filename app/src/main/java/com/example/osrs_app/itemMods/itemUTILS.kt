@@ -43,7 +43,7 @@ fun combineLatestAndMappingData(latestdata: OSRSLatestPriceData, mappingData: Li
                     item.low ?: 0,
                     item.lowTime ?: 0,
                     item.high?.minus(item.low ?: 0) ?: 0,
-                    calculateROI(item) * 100 / 100,
+                    (calculateROI(item) * 100 / 100).toInt(),
                     mappingData.name,
                     mappingData.examine,
                     mappingData.icon,
@@ -91,13 +91,29 @@ fun getTop10(combinedList: List<CombinedItem>): List<CombinedItem> {
     return top10List
 }
 
+//function to take in the combined list and remove all items with a high price of less than 10 mill
+fun removeLowValueItems(combinedList: List<CombinedItem>): List<CombinedItem> {
+    val filteredList = combinedList.filter { item ->
+        (item.low ?: 0) >= 10000000
+    }
+    return filteredList
+}
+
+//takes in the pricedifference int, divdes it by 1000 and returns as an int (the K function)
+fun K(priceDifference: Int): Int {
+    val K = priceDifference / 1000
+    return K
+}
+
+
 //takes in a combined list as input and returns a new list with just item name, ROI and price difference
 fun PriceList(combinedList: List<CombinedItem>): List<ItemPriceDifference> {
     var PriceList = List(combinedList.size) { index ->
         ItemPriceDifference(
             combinedList[index].name,
             combinedList[index].priceDifference ?: 0,
-            combinedList[index].roi
+            combinedList[index].roi,
+            combinedList[index].icon,
         )
     }
     return PriceList
