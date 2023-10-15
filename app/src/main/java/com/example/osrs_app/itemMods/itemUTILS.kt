@@ -114,6 +114,7 @@ fun PriceList(combinedList: List<CombinedItem>): List<ItemPriceDifference> {
             combinedList[index].priceDifference ?: 0,
             combinedList[index].roi,
             combinedList[index].icon,
+            combinedList[index].itemId
         )
     }
     return PriceList

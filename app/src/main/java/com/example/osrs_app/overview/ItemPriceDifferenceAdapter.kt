@@ -58,6 +58,7 @@ class ItemPriceDifferenceAdapter(private val itemList: List<ItemPriceDifference>
                 intent.putExtra("PRICE_DIFFERENCE", item.priceDifference)
                 intent.putExtra("ROI", item.ROI)
                 intent.putExtra("ICON_URL", item.icon)
+                intent.putExtra("ITEM_ID", item.itemId)
                 itemView.context.startActivity(intent)
 
         }

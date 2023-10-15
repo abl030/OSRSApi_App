@@ -38,6 +38,7 @@ class MainActivity : AppCompatActivity() {
         //actually grab some data, remember to do this every view.
         viewModel.fetchLatestData()
         viewModel.fetchMappingInfo()
+        viewModel.fetchTimeSeriesData(4151.toInt(), "6h")
 
 
         // Observe changes in the latestData LiveData

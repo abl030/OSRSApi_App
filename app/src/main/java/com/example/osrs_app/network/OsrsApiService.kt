@@ -2,11 +2,13 @@ package com.example.osrs_app.network
 
 import com.example.osrs_app.overview.MappingData
 import com.example.osrs_app.overview.OSRSLatestPriceData
+import com.example.osrs_app.overview.TimeSeriesResponse
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import retrofit2.Retrofit
 import retrofit2.converter.moshi.MoshiConverterFactory
 import retrofit2.http.GET
+import retrofit2.http.Query
 
 private const val BASE_URL = "https://prices.runescape.wiki/api/v1/osrs/"
 
@@ -40,6 +42,13 @@ interface OSRSApiService {
      */
     @GET("mapping")
     suspend fun getMappingData(): List<MappingData>
+
+    @GET("timeseries")
+    suspend fun getTimeSeriesData(
+        @Query("timestep") timestep: String,
+        @Query("id") itemId: Int,
+    ): TimeSeriesResponse
+
 }
 
 /**

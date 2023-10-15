@@ -49,4 +49,18 @@ data class ItemPriceDifference(
     val priceDifference: Int,
     val ROI: Int,
     val icon: String?,
+    val itemId: String?
 ): Serializable
+
+
+data class TimeSeriesResponse(
+    val data: List<TimeSeriesEntry>
+)
+
+data class TimeSeriesEntry(
+    val timestamp: Long,
+    val avgHighPrice: Long?,
+    val avgLowPrice: Long?,
+    val highPriceVolume: Int,
+    val lowPriceVolume: Int
+)

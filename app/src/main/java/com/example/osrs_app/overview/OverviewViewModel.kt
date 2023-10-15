@@ -28,6 +28,11 @@ class OverviewViewModel : ViewModel() {
     private val _error = MutableLiveData<String>()
     val error: LiveData<String> = _error
 
+    //make a time series data object using the api class.
+    private val _timeSeriesData = MutableLiveData<TimeSeriesResponse>()
+    val timeSeriesData: LiveData<TimeSeriesResponse> = _timeSeriesData
+
+
     //calls the API to populate the latest price data
     fun fetchLatestData() {
         viewModelScope.launch {
@@ -46,6 +51,18 @@ class OverviewViewModel : ViewModel() {
             try {
                 val data = OSRSApi.retrofitService.getMappingData()
                 _mappingInfo.value = data
+            } catch (e: Exception) {
+                _error.value = e.message
+            }
+        }
+    }
+
+    //calls the api to populate the time series data
+    fun fetchTimeSeriesData(itemId: Int, timestep: String) {
+        viewModelScope.launch {
+            try {
+                val data = OSRSApi.retrofitService.getTimeSeriesData(timestep, itemId)
+                _timeSeriesData.value = data
             } catch (e: Exception) {
                 _error.value = e.message
             }
