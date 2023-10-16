@@ -1,16 +1,16 @@
 package com.example.osrs_app.overview
 
 import android.os.Bundle
+import android.widget.Button
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import com.bumptech.glide.Glide
 import com.example.osrs_app.R
+import com.example.osrs_app.itemMods.ChartType
+import com.example.osrs_app.itemMods.updateChart
 import com.github.mikephil.charting.charts.LineChart
-import com.github.mikephil.charting.data.Entry
-import com.github.mikephil.charting.data.LineData
-import com.github.mikephil.charting.data.LineDataSet
 
 class ItemDetailActivity : AppCompatActivity() {
 
@@ -52,35 +52,26 @@ class ItemDetailActivity : AppCompatActivity() {
                 .into(ivIcon)
         }
 
-        val lineChart = findViewById<LineChart>(R.id.lineChart)
+        val lineChart: LineChart = findViewById(R.id.lineChart)
 
-        viewModel2.timeSeriesData.observe(this) { timeSeriesData ->
-            if (timeSeriesData != null) {
+        updateChart(ChartType.HIGH_PRICE, viewModel2.timeSeriesData.value, lineChart)
 
-                // Add the data to the chart
+        val highPriceButton: Button = findViewById(R.id.highPriceButton)
+        highPriceButton.setOnClickListener {
+            updateChart(ChartType.HIGH_PRICE, viewModel2.timeSeriesData.value, lineChart)
+        }
 
+        val lowPriceButton: Button = findViewById(R.id.lowPriceButton)
+        lowPriceButton.setOnClickListener {
+            updateChart(ChartType.LOW_PRICE, viewModel2.timeSeriesData.value, lineChart)
+        }
 
-                val entries = ArrayList<Entry>()
-
-                timeSeriesData.data.forEach {
-                    // Using timestamp for X and avgHighPrice for Y axis
-                    entries.add(Entry(it.timestamp.toFloat(), it.avgHighPrice?.toFloat() ?: 0f))
-                }
-
-                val lineDataSet = LineDataSet(entries, "High Price over Time")
-                val lineData = LineData(lineDataSet)
-                lineChart.data = lineData
-
-                // Optional: Customize the appearance of the chart
-                //lineDataSet.color = Color.BLUE
-                //lineDataSet.valueTextColor = Color.BLACK
-                lineDataSet.valueTextSize = 12f
-
-                // Refresh the chart
-                lineChart.invalidate()
-            }
-
-
+        val priceDeltaButton: Button = findViewById(R.id.priceDeltaButton)
+        priceDeltaButton.setOnClickListener {
+            updateChart(ChartType.PRICE_DELTA, viewModel2.timeSeriesData.value, lineChart)
         }
     }
+
+
+
 }

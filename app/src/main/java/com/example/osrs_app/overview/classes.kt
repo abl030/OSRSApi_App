@@ -64,3 +64,21 @@ data class TimeSeriesEntry(
     val highPriceVolume: Int,
     val lowPriceVolume: Int
 )
+
+data class TimeSeriesModList(
+    val data: List<TimeSeriesMod>
+)
+
+data class TimeSeriesMod(
+    val timestamp: Long,
+    val avgHighPrice: Long?,
+    val avgLowPrice: Long?,
+    val highPriceVolume: Int,
+    val lowPriceVolume: Int,
+    val timestampPriceDiff: Long,
+)
+
+data class suggestPrice(
+    val highPrice: Int,
+    val lowPrice: Int
+)

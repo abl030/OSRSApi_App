@@ -61,7 +61,7 @@ class OverviewViewModel : ViewModel() {
     fun fetchTimeSeriesData(itemId: Int, timestep: String) {
         viewModelScope.launch {
             try {
-                val data = OSRSApi.retrofitService.getTimeSeriesData(timestep, itemId)
+                val data = OSRSApi.retrofitService.getTimeSeriesData(timestep, itemId,)
                 _timeSeriesData.value = data
             } catch (e: Exception) {
                 _error.value = e.message

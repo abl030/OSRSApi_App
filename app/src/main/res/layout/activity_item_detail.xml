@@ -8,6 +8,31 @@
     android:layout_gravity="center_horizontal"
     android:gravity="center_horizontal">
 
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <Button
+            android:id="@+id/highPriceButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="High Price"/>
+
+        <Button
+            android:id="@+id/lowPriceButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Low Price"/>
+
+        <Button
+            android:id="@+id/priceDeltaButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Price Delta"/>
+
+    </LinearLayout>
+
     <TextView
         android:id="@+id/tvItemName"
         android:layout_width="wrap_content"

@@ -47,7 +47,7 @@ interface OSRSApiService {
     suspend fun getTimeSeriesData(
         @Query("timestep") timestep: String,
         @Query("id") itemId: Int,
-    ): TimeSeriesResponse
+        ): TimeSeriesResponse
 
 }
 
