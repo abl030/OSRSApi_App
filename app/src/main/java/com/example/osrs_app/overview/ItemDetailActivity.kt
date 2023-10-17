@@ -9,6 +9,7 @@ import androidx.appcompat.app.AppCompatActivity
 import com.bumptech.glide.Glide
 import com.example.osrs_app.R
 import com.example.osrs_app.itemMods.ChartType
+import com.example.osrs_app.itemMods.timeSeriesStats
 import com.example.osrs_app.itemMods.updateChart
 import com.github.mikephil.charting.charts.LineChart
 
@@ -27,17 +28,25 @@ class ItemDetailActivity : AppCompatActivity() {
 
         //actually grab some data, remember to do this every view.
         val viewModel2: OverviewViewModel by viewModels()
-
         if (itemId != null) {
-            viewModel2.fetchTimeSeriesData(itemId.toInt(), "24h")
+            viewModel2.fetchTimeSeriesData(itemId.toInt(), "5m")
         }
+
+        // Get the chart view
+        val lineChart: LineChart = findViewById(R.id.lineChart)
+
+        // Update the chart when the activity is opened
+        viewModel2.timeSeriesData.observe(this) { timeSeriesData ->
+            updateChart(ChartType.HIGH_PRICE, timeSeriesData, lineChart)
+            }
+
 
 
         val tvItemName = findViewById<TextView>(R.id.tvItemName)
         val tvPriceDifference = findViewById<TextView>(R.id.tvPriceDifference)
         val tvROI = findViewById<TextView>(R.id.tvROI)
         val ivIcon = findViewById<ImageView>(R.id.ivIcon)
-
+        val timeStats = findViewById<TextView>(R.id.timestats)
 
         // Set the data to the respective views
         tvItemName.text = "Item Name: $itemName"
@@ -52,13 +61,16 @@ class ItemDetailActivity : AppCompatActivity() {
                 .into(ivIcon)
         }
 
-        val lineChart: LineChart = findViewById(R.id.lineChart)
+        //update the timestats entry for the dataset
+        val (firstString, secondString) = timeSeriesStats(viewModel2.timeSeriesData.value)
+        timeStats.text = "$firstString $secondString"
 
-        updateChart(ChartType.HIGH_PRICE, viewModel2.timeSeriesData.value, lineChart)
 
         val highPriceButton: Button = findViewById(R.id.highPriceButton)
         highPriceButton.setOnClickListener {
             updateChart(ChartType.HIGH_PRICE, viewModel2.timeSeriesData.value, lineChart)
+            val (firstString, secondString) = timeSeriesStats(viewModel2.timeSeriesData.value)
+            timeStats.text = "$firstString $secondString"
         }
 
         val lowPriceButton: Button = findViewById(R.id.lowPriceButton)
@@ -70,6 +82,9 @@ class ItemDetailActivity : AppCompatActivity() {
         priceDeltaButton.setOnClickListener {
             updateChart(ChartType.PRICE_DELTA, viewModel2.timeSeriesData.value, lineChart)
         }
+
+
+
     }
 
 

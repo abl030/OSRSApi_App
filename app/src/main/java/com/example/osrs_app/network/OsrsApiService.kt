@@ -5,12 +5,21 @@ import com.example.osrs_app.overview.OSRSLatestPriceData
 import com.example.osrs_app.overview.TimeSeriesResponse
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
+import okhttp3.Interceptor
+import okhttp3.OkHttpClient
+import okhttp3.Response
 import retrofit2.Retrofit
 import retrofit2.converter.moshi.MoshiConverterFactory
 import retrofit2.http.GET
 import retrofit2.http.Query
 
 private const val BASE_URL = "https://prices.runescape.wiki/api/v1/osrs/"
+
+private const val USER_AGENT = "uni_android_app - @abl030"
+
+private val client = OkHttpClient.Builder()
+    .addInterceptor(UserAgentInterceptor(USER_AGENT))
+    .build()
 
 /**
  * Build the Moshi object with Kotlin adapter factory that Retrofit will be using.
@@ -23,6 +32,7 @@ private val moshi = Moshi.Builder()
  * The Retrofit object with the Moshi converter.
  */
 private val retrofit = Retrofit.Builder()
+    .client(client)
     .addConverterFactory(MoshiConverterFactory.create(moshi))
     .baseUrl(BASE_URL)
     .build()
@@ -58,3 +68,13 @@ interface OSRSApiService {
         val retrofitService: OSRSApiService by lazy { retrofit.create(OSRSApiService::class.java) }
     }
 
+
+class UserAgentInterceptor(val userAgent: String) : Interceptor {
+    override fun intercept(chain: Interceptor.Chain): Response {
+        val originalRequest = chain.request()
+        val requestWithUserAgent = originalRequest.newBuilder()
+            .header("User-Agent", userAgent)
+            .build()
+        return chain.proceed(requestWithUserAgent)
+    }
+}

@@ -33,6 +33,37 @@
 
     </LinearLayout>
 
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <Button
+            android:id="@+id/t5minButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="High Price"/>
+
+        <Button
+            android:id="@+id/t1hrButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Low Price"/>
+
+        <Button
+            android:id="@+id/t6hrButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Low Price"/>
+
+        <Button
+            android:id="@+id/t24hrButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Price Delta"/>
+
+    </LinearLayout>
+
     <TextView
         android:id="@+id/tvItemName"
         android:layout_width="wrap_content"
@@ -65,6 +96,14 @@
         android:layout_width="match_parent"
         android:layout_height="200dp"
         android:layout_marginTop="16dp"/>
+
+    <TextView
+        android:id="@+id/timestats"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
+        android:textSize="20sp"
+        android:textStyle="bold" />
 
 
     <!-- Optionally, if you want to show the image too -->
