@@ -14,7 +14,6 @@ import com.example.osrs_app.itemMods.combineLatestAndMappingData
 import com.example.osrs_app.itemMods.removeLowValueItems
 import com.example.osrs_app.itemMods.sortByTime
 import com.example.osrs_app.overview.ItemPriceDifferenceAdapter
-import com.example.osrs_app.overview.ItemPriceDifferenceAdapter2
 import com.example.osrs_app.overview.OverviewViewModel
 import java.util.Locale
 
@@ -28,7 +27,7 @@ class MainActivity : AppCompatActivity() {
 
         lateinit var recyclerView: RecyclerView
         lateinit var itemPriceDifferenceAdapter: ItemPriceDifferenceAdapter
-        lateinit var itemPriceDifferenceAdapter2: ItemPriceDifferenceAdapter2
+        lateinit var itemPriceDifferenceAdapter2: ItemPriceDifferenceAdapter
 
         // Create an instance of the ViewModel
         //specifically why this works and not val viewModel = ViewModelProvider(this)[OverviewViewModel::class.java]
@@ -90,7 +89,7 @@ class MainActivity : AppCompatActivity() {
                                 }
                                 val filteredPriceList = PriceList(filteredList)
 
-                                itemPriceDifferenceAdapter2 = ItemPriceDifferenceAdapter2(filteredPriceList)
+                                itemPriceDifferenceAdapter2 = ItemPriceDifferenceAdapter(filteredPriceList)
                                 recyclerView2.adapter = itemPriceDifferenceAdapter2
 
 

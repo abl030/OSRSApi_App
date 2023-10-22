@@ -6,11 +6,12 @@ import com.example.osrs_app.overview.TimeSeriesMod
 import com.example.osrs_app.overview.TimeSeriesModList
 import com.example.osrs_app.overview.TimeSeriesResponse
 import com.github.mikephil.charting.charts.LineChart
+import com.github.mikephil.charting.components.AxisBase
 import com.github.mikephil.charting.components.XAxis
 import com.github.mikephil.charting.data.Entry
 import com.github.mikephil.charting.data.LineData
 import com.github.mikephil.charting.data.LineDataSet
-import com.github.mikephil.charting.formatter.IndexAxisValueFormatter
+import com.github.mikephil.charting.formatter.ValueFormatter
 import java.util.Date
 import java.util.Locale
 
@@ -41,49 +42,36 @@ fun extractHighLowValues(modList: TimeSeriesModList): Triple<Long?, Long?, Long?
 
 fun updateChart(chartType: ChartType, timeSeriesData: TimeSeriesResponse?, lineChart: LineChart) {
     if (timeSeriesData != null) {
-        val currentTime = System.currentTimeMillis() / 1000
-        val filterTimeInSeconds = 2 * 60 * 60
-        val filteredData = timeSeriesData.data.filter {
-            currentTime >= filterTimeInSeconds
-        }
+    //was originally going to filter by time, but there wasn't enough data for the low volume items
+        val filteredData = timeSeriesData.data
 
         val entries = ArrayList<Entry>()
 
-        // Calculate spacing for the four vertical gridlines
-        val dataCount = filteredData.size
-        val gridlineSpacing = dataCount / 3
-        var gridlineIndex = 1
 
-         // Adjust the format as needed
-        val xLabels = ArrayList<String>()
-
-        filteredData.forEachIndexed { index, dataItem ->
-            val xValue = dataItem.timestamp.toFloat()
-
-            // Add x-axis label for the gridlines
-            if (index == gridlineIndex * gridlineSpacing) {
-                val localTime = formatDate(dataItem.timestamp * 1000)
-                xLabels.add(localTime)
-                gridlineIndex++
-            }
+        filteredData.forEachIndexed { _, dataItem ->
 
             when (chartType) {
                 ChartType.HIGH_PRICE -> dataItem.avgHighPrice?.let { highPrice ->
-                    entries.add(Entry(xValue, highPrice.toFloat()))
+                    // remember the ? if the value is null, it will not be added to the list
+                    entries.add(Entry(dataItem.timestamp.toFloat(), highPrice.toFloat()))
                 }
                 ChartType.LOW_PRICE -> dataItem.avgLowPrice?.let { lowPrice ->
-                    entries.add(Entry(xValue, lowPrice.toFloat()))
+                    // 'let' is only executed if 'avgLowPrice' is not null
+                    entries.add(Entry(dataItem.timestamp.toFloat(), lowPrice.toFloat()))
                 }
                 ChartType.PRICE_DELTA -> dataItem.avgHighPrice?.let { highPrice ->
+                    // If 'avgHighPrice' is not null, we enter this 'let'
                     dataItem.avgLowPrice?.let { lowPrice ->
+                        // and we enter this one if 'avgLowPrice' is not null
                         val priceGap = highPrice - lowPrice
-                        entries.add(Entry(xValue, priceGap.toFloat()))
+                        entries.add(Entry(dataItem.timestamp.toFloat(), priceGap.toFloat()))
                     }
                 }
             }
+
         }
 
-        // Create and customize dataset
+        // Create and format the dataset and chart
         val lineDataSet = LineDataSet(entries,
             chartType.name.replace('_', ' ')
                 .replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.ROOT) else it.toString() })
@@ -96,8 +84,8 @@ fun updateChart(chartType: ChartType, timeSeriesData: TimeSeriesResponse?, lineC
         lineDataSet.valueTextSize = 12f
 
         // Set data to the LineChart
-        val lineChart = lineChart
         lineChart.data = LineData(lineDataSet)
+
 
         // Customizing X-Axis
         val xAxis = lineChart.xAxis
@@ -105,8 +93,15 @@ fun updateChart(chartType: ChartType, timeSeriesData: TimeSeriesResponse?, lineC
         xAxis.setDrawGridLines(true)
         xAxis.gridLineWidth = 0.5f
         xAxis.gridColor = Color.GRAY
-        xAxis.labelCount = 4 // Display 4 labels evenly spaced
-        xAxis.valueFormatter = IndexAxisValueFormatter(xLabels) // Set custom labels
+        xAxis.isEnabled = true
+        xAxis.labelCount = 5 // Display 3 labels evenly spaced
+        xAxis.setLabelCount(5, true)
+
+        //this took so so long. I originally had an index as my x-axis, but that was not what I wanted. I wanted the timestamp!
+        xAxis.valueFormatter = DataValueFormatter()
+
+        lineChart.axisLeft.valueFormatter = LargeValueFormatterEdit()
+        lineChart.axisRight.valueFormatter = LargeValueFormatterEdit()
 
         // Refresh the chart
         lineChart.invalidate()
@@ -128,7 +123,7 @@ fun timeSeriesStats(timeSeriesData: TimeSeriesResponse?): Pair<String?, String?>
 
         if (averageTimeStep != null) {
             return Pair(
-                "The oldest sale in this data set is $formatOld while the average time between sales is ",
+                "The oldest sale in this data set is $formatOld while the average time between sales is",
                 (averageTimeStep / 60).toString() + " minutes"
             )
         }
@@ -138,7 +133,17 @@ fun timeSeriesStats(timeSeriesData: TimeSeriesResponse?): Pair<String?, String?>
     return Pair(null, null)
 }
 
+//function to return a formatted date string
 fun formatDate(date: Long): String {
-    val sdf = SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault())
+    val sdf = SimpleDateFormat("dd/MM HH:mm", Locale.getDefault())
     return sdf.format(Date(date * 1000))
 }
+
+//convert time stamps to formatted dates in the chart
+class DataValueFormatter: ValueFormatter() {
+    override fun getAxisLabel(value: Float, axis: AxisBase?): String {
+        return formatDate(value.toLong())
+    }
+}
+
+

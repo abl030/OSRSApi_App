@@ -5,6 +5,7 @@
     android:layout_height="match_parent"
     android:orientation="vertical"
     android:padding="16dp"
+    android:background="@color/white"
     android:layout_gravity="center_horizontal"
     android:gravity="center_horizontal">
 
@@ -33,36 +34,6 @@
 
     </LinearLayout>
 
-    <LinearLayout
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal">
-
-        <Button
-            android:id="@+id/t5minButton"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="High Price"/>
-
-        <Button
-            android:id="@+id/t1hrButton"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Low Price"/>
-
-        <Button
-            android:id="@+id/t6hrButton"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Low Price"/>
-
-        <Button
-            android:id="@+id/t24hrButton"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Price Delta"/>
-
-    </LinearLayout>
 
     <TextView
         android:id="@+id/tvItemName"

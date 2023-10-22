@@ -32,12 +32,16 @@ class ItemDetailActivity : AppCompatActivity() {
             viewModel2.fetchTimeSeriesData(itemId.toInt(), "5m")
         }
 
-        // Get the chart view
+        // Get the chart view and timestats set up
         val lineChart: LineChart = findViewById(R.id.lineChart)
+        val timeStats = findViewById<TextView>(R.id.timestats)
 
         // Update the chart when the activity is opened
         viewModel2.timeSeriesData.observe(this) { timeSeriesData ->
             updateChart(ChartType.HIGH_PRICE, timeSeriesData, lineChart)
+            //update the timestats entry for the dataset
+            val (firstString, secondString) = timeSeriesStats(viewModel2.timeSeriesData.value)
+            timeStats.text = "$firstString $secondString"
             }
 
 
@@ -46,7 +50,7 @@ class ItemDetailActivity : AppCompatActivity() {
         val tvPriceDifference = findViewById<TextView>(R.id.tvPriceDifference)
         val tvROI = findViewById<TextView>(R.id.tvROI)
         val ivIcon = findViewById<ImageView>(R.id.ivIcon)
-        val timeStats = findViewById<TextView>(R.id.timestats)
+
 
         // Set the data to the respective views
         tvItemName.text = "Item Name: $itemName"
@@ -61,17 +65,13 @@ class ItemDetailActivity : AppCompatActivity() {
                 .into(ivIcon)
         }
 
-        //update the timestats entry for the dataset
-        val (firstString, secondString) = timeSeriesStats(viewModel2.timeSeriesData.value)
-        timeStats.text = "$firstString $secondString"
+
 
 
         val highPriceButton: Button = findViewById(R.id.highPriceButton)
         highPriceButton.setOnClickListener {
             updateChart(ChartType.HIGH_PRICE, viewModel2.timeSeriesData.value, lineChart)
-            val (firstString, secondString) = timeSeriesStats(viewModel2.timeSeriesData.value)
-            timeStats.text = "$firstString $secondString"
-        }
+                    }
 
         val lowPriceButton: Button = findViewById(R.id.lowPriceButton)
         lowPriceButton.setOnClickListener {
