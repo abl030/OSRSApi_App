@@ -10,7 +10,7 @@ import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.example.osrs_app.R
-import com.example.osrs_app.itemMods.K
+import com.example.osrs_app.itemMods.kFormatter
 
 class ItemPriceDifferenceAdapter(private val itemList: List<ItemPriceDifference>) :
     RecyclerView.Adapter<ItemPriceDifferenceAdapter.ViewHolder>() {
@@ -37,9 +37,11 @@ class ItemPriceDifferenceAdapter(private val itemList: List<ItemPriceDifference>
         private val roiTextView: TextView = itemView.findViewById(R.id.textROI)
         private val iconImageView: ImageView = itemView.findViewById(R.id.itemIcon)
 
+
+
         fun bind(item: ItemPriceDifference) {
             nameTextView.text = "${item.name}"
-            priceDifferenceTextView.text = "Price Difference: ${K(item.priceDifference)}"
+            priceDifferenceTextView.text = "Price Difference: ${kFormatter(item.priceDifference)}"
             roiTextView.text = "ROI: ${item.ROI}%"
 
             // Replace spaces with underscores in the iconUrl
@@ -59,6 +61,10 @@ class ItemPriceDifferenceAdapter(private val itemList: List<ItemPriceDifference>
                 intent.putExtra("ROI", item.ROI)
                 intent.putExtra("ICON_URL", item.icon)
                 intent.putExtra("ITEM_ID", item.itemId)
+                intent.putExtra("HIGH_PRICE", item.highPrice)
+                intent.putExtra("LOW_PRICE", item.lowPrice)
+                intent.putExtra("LIMIT", item.limit)
+                intent.putExtra("EXAMINE", item.examine)
                 itemView.context.startActivity(intent)
 
         }

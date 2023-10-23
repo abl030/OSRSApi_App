@@ -5,7 +5,6 @@ import com.example.osrs_app.overview.ItemPriceDifference
 import com.example.osrs_app.overview.MappingData
 import com.example.osrs_app.overview.OSRSItem
 import com.example.osrs_app.overview.OSRSLatestPriceData
-import java.lang.Math.abs
 
 //Takes an OSRSItem as input.
 //Returns the ROI (Return on Investment) as a double
@@ -27,40 +26,35 @@ fun calculateROI(item: OSRSItem): Double {
 
 //Takes the latest price data as input and the latest mapping data.
 //Returns a combined list of the item data
-fun combineLatestAndMappingData(latestdata: OSRSLatestPriceData, mappingData: List<MappingData>): List<CombinedItem> {
-    val mappingInfoValue = mappingData
+fun combineLatestAndMappingData(latestData: OSRSLatestPriceData, mappingData: List<MappingData>): List<CombinedItem> {
 
-    if (latestdata != null && mappingInfoValue != null) {
-        val combinedList = latestdata.data.keys.mapNotNull { itemId ->
-            val item = latestdata.data[itemId]
-            val mappingData = mappingInfoValue.find { mappingItem ->
-                mappingItem.id == itemId.toInt()
-            }
-            if (item != null && mappingData != null) {
-                CombinedItem(
-                    itemId,
-                    item.high ?: 0,
-                    item.highTime ?: 0,
-                    item.low ?: 0,
-                    item.lowTime ?: 0,
-                    item.high?.minus(item.low ?: 0) ?: 0,
-                    (calculateROI(item) * 100 / 100).toInt(),
-                    mappingData.name,
-                    mappingData.examine,
-                    mappingData.icon,
-                    mappingData.limit
-                )
-            } else {
-                null // Exclude items without valid data
-            }
+    val combinedList = latestData.data.keys.mapNotNull { itemId ->
+        val item = latestData.data[itemId]
+        val mappingDataTemp = mappingData.find { mappingItem ->
+            mappingItem.id == itemId.toInt()
         }
-        return combinedList // Return the list here
-    } else {
-        return emptyList() // Return an empty list if latestdata or mappingInfoValue is null
+        if (item != null && mappingDataTemp != null) {
+            CombinedItem(
+                itemId,
+                item.high ?: 0,
+                item.highTime ?: 0,
+                item.low ?: 0,
+                item.lowTime ?: 0,
+                item.high?.minus(item.low ?: 0) ?: 0,
+                (calculateROI(item) * 100 / 100).toInt(),
+                mappingDataTemp.name,
+                mappingDataTemp.examine,
+                mappingDataTemp.icon,
+                mappingDataTemp.limit
+            )
+        } else {
+            null // Exclude items without valid data
+        }
     }
+    return combinedList // Return the list here
 }
 
-//a function to sort the list by any list values chosen as an input
+//sort the list by any list values chosen as an input
 //The list can be sorted by any value, but the default is ROI
 fun sortByValueDesc(combinedList: List<CombinedItem>, value: String = "ROI"): List<CombinedItem> {
     val sortedList = when (value) {
@@ -88,8 +82,7 @@ fun sortByTime(combinedList: List<CombinedItem>): List<CombinedItem> {
 
 //function to return just the top 10 items
 fun getTop10(combinedList: List<CombinedItem>): List<CombinedItem> {
-    val top10List = combinedList.take(10)
-    return top10List
+    return combinedList.take(10)
 }
 
 //function to take in the combined list and remove all items with a high price of less than 10 mill
@@ -100,30 +93,54 @@ fun removeLowValueItems(combinedList: List<CombinedItem>): List<CombinedItem> {
     return filteredList
 }
 
-//takes in the pricedifference int, divdes it by 1000 and returns as an int (the K function)
-fun K(priceDifference: Int): String {
-    if (abs(priceDifference) > 1000) {
-        val K = (priceDifference / 1000).toString() + "k"
-        return K
-    }
-    else {
-        return priceDifference.toString() + " GP"
+//takes in the price-difference int, divides it by 1000 and returns as an int (the K function)
+fun kFormatter(priceDifference: Int): String {
+    val absValue = kotlin.math.abs(priceDifference).toDouble()
+
+    return when {
+        absValue >= 1_000_000_000 -> {
+            String.format("%.3fB", priceDifference / 1_000_000_000.0)
+        }
+        absValue >= 1_000_000 -> {
+            String.format("%.3fM", priceDifference / 1_000_000.0)
+        }
+        absValue >= 1_000 -> {
+            String.format("%.0fK", priceDifference / 1_000.0)
+        }
+        else -> {
+            "$priceDifference GP"
+        }
     }
 }
 
 
 
 
+
 //takes in a combined list as input and returns a new list with just item name, ROI and price difference
-fun PriceList(combinedList: List<CombinedItem>): List<ItemPriceDifference> {
-    var PriceList = List(combinedList.size) { index ->
+fun priceList(combinedList: List<CombinedItem>): List<ItemPriceDifference> {
+    val priceList = List(combinedList.size) { index ->
         ItemPriceDifference(
             combinedList[index].name,
             combinedList[index].priceDifference ?: 0,
             combinedList[index].roi,
             combinedList[index].icon,
-            combinedList[index].itemId
+            combinedList[index].itemId,
+            combinedList[index].high,
+            combinedList[index].low,
+            combinedList[index].limit,
+            combinedList[index].examine
         )
     }
-    return PriceList
+    return priceList
+}
+
+//limit formatter, some display 0 which actually means "unknown"
+fun limitFormatter(limit: Int?): String {
+    return if (limit == 0) {
+        "Unknown"
+    }
+    else {
+        limit.toString()
+    }
 }

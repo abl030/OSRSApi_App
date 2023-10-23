@@ -128,6 +128,9 @@ fun updateChart(chartType: ChartType, timeSeriesData: TimeSeriesResponse?, lineC
         lineChart.axisLeft.valueFormatter = LargeValueFormatterEdit()
         lineChart.axisRight.valueFormatter = LargeValueFormatterEdit()
 
+        lineChart.axisLeft.granularity = 1f
+        lineChart.axisRight.granularity = 1f
+
         //turn off labels, only need the markerView now.
         lineDataSet.setDrawValues(false)
 
@@ -159,11 +162,11 @@ fun timeSeriesStats(timeSeriesData: TimeSeriesResponse?): Pair<String?, String?>
             stringBuilder.append("with volume: ${lowPriceVolume(timeSeriesData)}. ")
 
             stringBuilder.append("High to low ratio: ${hightolowratioString(timeSeriesData)}. ")
-            stringBuilder.append("Potential profit per flip: ${profitPerFlipInt(timeSeriesData)?.let { K(it) } ?: "null"}. ")
-            stringBuilder.append("Potential profit per hour: ${potentialProfitPerHour(timeSeriesData)?.let { K(it) } ?: "null"}. ")
-            stringBuilder.append("Suggested buy offer price: ${K(suggestedBuyOfferPriceInt(timeSeriesData))}. ")
-            stringBuilder.append("Suggested sell offer price: ${K(suggestedSellOfferPriceInt(timeSeriesData))}. ")
-            stringBuilder.append("Suggested profit per hour: ${K(suggestedProfitPerHourInt(timeSeriesData))}.")
+            stringBuilder.append("Potential profit per flip: ${profitPerFlipInt(timeSeriesData)?.let { kFormatter(it) } ?: "null"}. ")
+            stringBuilder.append("Potential profit per hour: ${potentialProfitPerHour(timeSeriesData)?.let { kFormatter(it) } ?: "null"}. ")
+            stringBuilder.append("Suggested buy offer price: ${kFormatter(suggestedBuyOfferPriceInt(timeSeriesData))}. ")
+            stringBuilder.append("Suggested sell offer price: ${kFormatter(suggestedSellOfferPriceInt(timeSeriesData))}. ")
+            stringBuilder.append("Suggested profit per hour: ${kFormatter(suggestedProfitPerHourInt(timeSeriesData))}.")
 
             return Pair(" ", stringBuilder.toString())
         } else {
@@ -208,8 +211,7 @@ fun averageLowTimeStepInMinutes(timeSeriesData: TimeSeriesResponse?): Double? {
     val oldestTime = timeSeriesData?.data?.filter { it.avgLowPrice != null }?.minByOrNull { it.timestamp }?.timestamp
     val newestTime = timeSeriesData?.data?.filter { it.avgLowPrice != null }?.maxByOrNull { it.timestamp }?.timestamp
     val lowPriceVolume = lowPriceVolume(timeSeriesData).toDouble()
-    val averageLowTimeStep = ((newestTime?.minus(oldestTime ?: 0))?.div(lowPriceVolume(timeSeriesData))
-        ?.div(60))
+
     return (newestTime?.toDouble()?.minus(oldestTime?.toDouble() ?: 0.0))?.div(lowPriceVolume)?.div(60.0)
 }
 
@@ -218,6 +220,19 @@ fun hightolowratioString(timeSeriesData: TimeSeriesResponse?): String {
     val lowVol = lowPriceVolume(timeSeriesData).toDouble()
     val highToLowRatio = highVol / lowVol
     return String.format("%.2f", highToLowRatio)
+}
+
+fun formatRatio(ratio: String?): String {
+    return "For every item you buy, you will be able to sell $ratio items"
+
+}
+
+fun ratioWarnings(ratio: String?): String {
+    return when {
+        ratio != null && ratio.toDouble() > 1.5 -> "This item may by hard to buy at the low price, if bought it will easily sell"
+        ratio != null && ratio.toDouble() < 0.5 -> "This item will easily buy low but it will be hard to sell at the high price."
+        else -> "This item has a balanced ratio, they buy and sell at similar amounts"
+    }
 }
 
 fun profitPerFlipInt(timeSeriesData: TimeSeriesResponse?): Int? {
@@ -250,7 +265,7 @@ fun potentialProfitPerHour(timeSeriesData: TimeSeriesResponse?): Int? {
     val avgLowPriceTime = averageLowTimeStepInMinutes(timeSeriesData)
 
     if (avgHighPriceTime != null) {
-        return if (avgHighPriceTime < avgLowPriceTime!!) {
+        return if (avgHighPriceTime >= avgLowPriceTime!!) {
             val profitPerHour =
                 (profitPerFlipInt(timeSeriesData)?.div(avgHighPriceTime))?.times(60)
             profitPerHour?.toInt()
@@ -335,7 +350,7 @@ fun suggestedProfitPerHourInt(timeSeriesData: TimeSeriesResponse?): Int {
     val taxValue = findTaxValueInt(timeSeriesData)
 
     if (avgHighPriceTime != null) {
-        return if (avgHighPriceTime <= avgLowPriceTime!!) {
+        return if (avgHighPriceTime >= avgLowPriceTime!!) {
             val profitPerHour =
                 (((suggestedSellOfferPriceInt(timeSeriesData) - suggestedBuyOfferPriceInt(timeSeriesData)) - taxValue!!) / avgHighPriceTime * 60)
             profitPerHour.toInt()
@@ -361,6 +376,25 @@ class DataValueFormatter: ValueFormatter() {
     override fun getAxisLabel(value: Float, axis: AxisBase?): String {
         return formatDate(value.toLong())
     }
+}
+
+//format the double results from time functions
+//if less than 1 minute, return seconds
+// if greater than 1 minutes return just the number of minutes.
+// if less than 1 second return <1 second
+fun formatMinutes(double: Double?): String {
+    double?.let {
+        val totalSeconds = it.times(60)
+        val hours = it.toInt() / 60
+        val minutes = it.toInt() % 60
+
+        return when {
+            totalSeconds < 1 -> "<1 sec"
+            totalSeconds < 60 -> "${String.format("%.0f", totalSeconds)} secs"
+            it < 60 -> "${String.format("%.0f", it)} mins"
+            else -> "${hours}hr ${minutes}m"
+        }
+    } ?: return "Unknown"
 }
 
 

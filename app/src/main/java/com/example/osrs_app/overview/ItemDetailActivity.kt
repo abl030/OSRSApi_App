@@ -10,7 +10,19 @@ import com.bumptech.glide.Glide
 import com.example.osrs_app.R
 import com.example.osrs_app.itemMods.ChartType
 import com.example.osrs_app.itemMods.CustomMarkerView
-import com.example.osrs_app.itemMods.K
+import com.example.osrs_app.itemMods.averageHighTimeStepInMinutes
+import com.example.osrs_app.itemMods.averageLowTimeStepInMinutes
+import com.example.osrs_app.itemMods.formatMinutes
+import com.example.osrs_app.itemMods.formatRatio
+import com.example.osrs_app.itemMods.hightolowratioString
+import com.example.osrs_app.itemMods.kFormatter
+import com.example.osrs_app.itemMods.limitFormatter
+import com.example.osrs_app.itemMods.potentialProfitPerHour
+import com.example.osrs_app.itemMods.profitPerFlipInt
+import com.example.osrs_app.itemMods.ratioWarnings
+import com.example.osrs_app.itemMods.suggestedBuyOfferPriceInt
+import com.example.osrs_app.itemMods.suggestedProfitPerHourInt
+import com.example.osrs_app.itemMods.suggestedSellOfferPriceInt
 import com.example.osrs_app.itemMods.timeSeriesStats
 import com.example.osrs_app.itemMods.updateChart
 import com.github.mikephil.charting.charts.LineChart
@@ -27,6 +39,10 @@ class ItemDetailActivity : AppCompatActivity() {
         val roi = intent.getIntExtra("ROI", 0)
         val iconUrl = intent.getStringExtra("ICON_URL")
         val itemId = intent.getStringExtra("ITEM_ID")
+        val highPrice = intent.getIntExtra("HIGH_PRICE", 0)
+        val lowPriceIntent = intent.getIntExtra("LOW_PRICE", 0)
+        val limit = intent.getIntExtra("LIMIT", 0)
+        val examine = intent.getStringExtra("EXAMINE")
 
         //actually grab some data, remember to do this every view.
         val viewModel2: OverviewViewModel by viewModels()
@@ -45,7 +61,6 @@ class ItemDetailActivity : AppCompatActivity() {
             lineChart.marker = mv
             //update the timestats entry for the dataset
             val (firstString, secondString) = timeSeriesStats(viewModel2.timeSeriesData.value)
-            timeStats.text = "$firstString $secondString"
             }
 
 
@@ -54,15 +69,66 @@ class ItemDetailActivity : AppCompatActivity() {
         val tvPriceDifference = findViewById<TextView>(R.id.tvPriceDifference)
         val tvROI = findViewById<TextView>(R.id.tvROI)
         val ivIcon = findViewById<ImageView>(R.id.ivIcon)
-        val priceData = findViewById<TextView>(R.id.priceData)
+        val highPriceIntent = findViewById<TextView>(R.id.HighPrice)
+        val lowPrice = findViewById<TextView>(R.id.LowPrice)
+        val limitView = findViewById<TextView>(R.id.Limit)
+        val examineView = findViewById<TextView>(R.id.Examine)
+        val averageBuyTime = findViewById<TextView>(R.id.AverageBuyTime)
+        val averageSellTime = findViewById<TextView>(R.id.AverageSellTime)
+        val timeSeriesRatio = findViewById<TextView>(R.id.Ratio)
+        val timeSeriesRatioWarning = findViewById<TextView>(R.id.RatioWarning)
+        val profitFlip = findViewById<TextView>(R.id.profitPerFlip)
+        val potProfitHour = findViewById<TextView>(R.id.potProfitHour)
+        val suggestedBuyPrice = findViewById<TextView>(R.id.suggestedBuyPrice)
+        val suggestedSellPrice = findViewById<TextView>(R.id.suggestedSellPrice)
+
+
 
 
         // Set the data to the respective views
         tvItemName.text = "$itemName"
-        tvPriceDifference.text = "Price Difference: " + K(priceDifference)
+        tvPriceDifference.text = "Price Difference: " + kFormatter(priceDifference)
         tvROI.text = "ROI: $roi%"
-        priceData.text = ""
+        highPriceIntent.text = "High Price: " + kFormatter(highPrice)
+        lowPrice.text = "Low Price: " + kFormatter(lowPriceIntent)
+        limitView.text = "Limit: " + limitFormatter( limit )
+        examineView.text = examine
+        viewModel2.timeSeriesData.observe(this) {
+            averageSellTime.text =
+                "Avg Sell Time: " + formatMinutes(averageHighTimeStepInMinutes(viewModel2.timeSeriesData.value))
 
+            averageBuyTime.text =
+                "Avg Buy Time: " + formatMinutes(averageLowTimeStepInMinutes(viewModel2.timeSeriesData.value))
+
+            timeSeriesRatio.text = formatRatio(hightolowratioString(viewModel2.timeSeriesData.value))
+
+            timeSeriesRatioWarning.text = ratioWarnings(hightolowratioString(viewModel2.timeSeriesData.value))
+
+            profitFlip.text = profitPerFlipInt(viewModel2.timeSeriesData.value)?.let { it1 ->
+                kFormatter(
+                    it1)
+            }
+
+            potProfitHour.text = potentialProfitPerHour(viewModel2.timeSeriesData.value)?.let { it1 ->
+                kFormatter(
+                    it1)
+            }
+
+            suggestedBuyPrice.text = suggestedBuyOfferPriceInt(viewModel2.timeSeriesData.value)?.let { it1 ->
+                kFormatter(
+                    it1)
+            }
+
+            suggestedSellPrice.text = suggestedSellOfferPriceInt(viewModel2.timeSeriesData.value)?.let { it1 ->
+                kFormatter(
+                    it1)
+            }
+
+            timeStats.text = "Potential profit per hour with suggested strategy is "+ kFormatter(suggestedProfitPerHourInt(viewModel2.timeSeriesData.value)) + " gp/h"
+
+
+
+        }
         // load the image from the API using glide.
         if (iconUrl != null) {
             val formattedIconUrl = iconUrl.replace(" ", "_")

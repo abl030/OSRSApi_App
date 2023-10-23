@@ -9,8 +9,8 @@ import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.example.osrs_app.itemMods.PriceList
 import com.example.osrs_app.itemMods.combineLatestAndMappingData
+import com.example.osrs_app.itemMods.priceList
 import com.example.osrs_app.itemMods.removeLowValueItems
 import com.example.osrs_app.itemMods.sortByTime
 import com.example.osrs_app.overview.ItemPriceDifferenceAdapter
@@ -57,7 +57,7 @@ class MainActivity : AppCompatActivity() {
                         //then we sort by ROI and take the top 20 items
                         combinedlist = combinedlist.sortedByDescending { it.roi }
                         combinedlist = combinedlist.take(20)
-                        val combinedlist2 = PriceList(combinedlist)
+                        val combinedlist2 = priceList(combinedlist)
 
                         //then we display the list in a recycler view
                         recyclerView = findViewById(R.id.recyclerView)
@@ -87,7 +87,7 @@ class MainActivity : AppCompatActivity() {
                                         Locale.ROOT)
                                         ?.contains(searchQuery) ?: true
                                 }
-                                val filteredPriceList = PriceList(filteredList)
+                                val filteredPriceList = priceList(filteredList)
 
                                 itemPriceDifferenceAdapter2 = ItemPriceDifferenceAdapter(filteredPriceList)
                                 recyclerView2.adapter = itemPriceDifferenceAdapter2

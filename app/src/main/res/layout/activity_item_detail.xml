@@ -48,6 +48,14 @@
         android:layout_width="75dp"
         android:layout_height="75dp" />
 
+    <TextView
+        android:id="@+id/Examine"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="15sp"
+        android:layout_marginBottom="1dp"
+        />
+
     <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -68,13 +76,39 @@
         android:layout_marginBottom="1dp" />
     </LinearLayout>
 
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
     <TextView
-        android:id="@+id/priceData"
+        android:id="@+id/HighPrice"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textSize="15sp"
         android:layout_marginBottom="1dp"
-        android:text="Your Text Here"/>
+        android:layout_marginEnd="5dp"
+        />
+
+    <TextView
+        android:id="@+id/LowPrice"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="15sp"
+        android:layout_marginBottom="1dp"
+        android:layout_marginEnd="5dp"
+        />
+
+    <TextView
+        android:id="@+id/Limit"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="15sp"
+        android:layout_marginBottom="1dp"
+        />
+
+
+    </LinearLayout>
 
     <com.github.mikephil.charting.charts.LineChart
         android:id="@+id/lineChart"
@@ -84,43 +118,187 @@
         android:layout_marginBottom="5dp"/>
 
     <LinearLayout
-        android:layout_width="match_parent"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:gravity="center_horizontal">
+        android:gravity="center_horizontal"
+        android:layout_gravity="center_horizontal">
 
         <TextView
-            android:id="@+id/tvChartInfo1"
-            android:layout_width="0dp"
+            android:id="@+id/AverageSellTime"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
             android:text="Info 1"
-            android:textSize="15sp"/>
+            android:textSize="15sp"
+            android:layout_marginEnd="10dp"/>
 
         <TextView
-            android:id="@+id/tvChartInfo2"
-            android:layout_width="0dp"
+            android:id="@+id/AverageBuyTime"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
             android:text="Info 2"
             android:textSize="15sp"/>
 
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:gravity="center_horizontal"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginBottom="20dp">
+
         <TextView
-            android:id="@+id/tvChartInfo3"
-            android:layout_width="0dp"
+            android:id="@+id/Ratio"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="Info 3"
-            android:textSize="15sp"/>
+            android:text="Info 1"
+            android:textSize="15sp"
+            android:layout_marginEnd="10dp"/>
+
+        <TextView
+            android:id="@+id/RatioWarning"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Info 1"
+            android:textSize="15sp"
+            />
 
     </LinearLayout>
+
+
+    <!-- Outer LinearLayout to stack the two rows vertically -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:gravity="center_horizontal">
+
+        <!-- First row of rectangles -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_horizontal">
+
+            <!-- First rectangle -->
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="75dp"
+                android:layout_weight="1"
+                android:orientation="vertical"
+                android:gravity="center"
+                android:background="@android:color/darker_gray">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Profit/Flip:"
+                    android:textSize="20dp"
+                    android:textStyle="bold"
+                    />
+
+                <TextView
+                    android:id="@+id/profitPerFlip"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Dynamic Text 1"
+                    android:textSize="20dp" />
+            </LinearLayout>
+
+            <!-- Second rectangle -->
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="75dp"
+                    android:layout_weight="1"
+                    android:orientation="vertical"
+                    android:gravity="center"
+                    android:background="@android:color/darker_gray">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Potential Profit/Hour:"
+                        android:textSize="20dp"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:id="@+id/potProfitHour"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Dynamic Text 2"
+                        android:textSize="20dp" />
+
+        </LinearLayout>
+                </LinearLayout>
+
+        <!-- 2nd row of rectangles -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_horizontal">
+
+            <!-- 3rd rectangle -->
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="75dp"
+                android:layout_weight="1"
+                android:orientation="vertical"
+                android:gravity="center"
+                android:background="@android:color/darker_gray">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Suggested Buy Price:"
+                    android:textSize="20dp"
+                    android:textStyle="bold"
+                    />
+
+                <TextView
+                    android:id="@+id/suggestedBuyPrice"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Dynamic Text 3"
+                    android:textSize="20dp" />
+            </LinearLayout>
+
+            <!-- 4th rectangle -->
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="75dp"
+                android:layout_weight="1"
+                android:orientation="vertical"
+                android:gravity="center"
+                android:background="@android:color/darker_gray">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Suggest Sell Price:"
+                    android:textSize="20dp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/suggestedSellPrice"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Dynamic Text 2"
+                    android:textSize="20dp" />
+
+            </LinearLayout>
+        </LinearLayout>
+    </LinearLayout>
+
 
     <TextView
         android:id="@+id/timestats"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="8dp"
-        android:textSize="20sp"
+        android:layout_marginTop="8dp"
+        android:textSize="25dp"
         android:textStyle="bold" />
 
 

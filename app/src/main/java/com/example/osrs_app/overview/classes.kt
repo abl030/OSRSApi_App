@@ -49,7 +49,11 @@ data class ItemPriceDifference(
     val priceDifference: Int,
     val ROI: Int,
     val icon: String?,
-    val itemId: String?
+    val itemId: String?,
+    val highPrice: Int?,
+    val lowPrice: Int?,
+    val limit: Int?,
+    val examine: String?
 ): Serializable
 
 
