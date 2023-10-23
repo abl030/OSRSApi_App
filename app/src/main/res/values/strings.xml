@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">osrs_app</string>
+    <string name="app_name">GEPulse: Realtime OSRS Prices</string>
     <string name="title_activity_item_detail">ItemDetailActivity</string>
     <!-- Strings used for fragments for navigation -->
     <string name="first_fragment_label">First Fragment</string>

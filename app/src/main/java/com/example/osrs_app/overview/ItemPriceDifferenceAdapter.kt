@@ -39,7 +39,7 @@ class ItemPriceDifferenceAdapter(private val itemList: List<ItemPriceDifference>
 
         fun bind(item: ItemPriceDifference) {
             nameTextView.text = "${item.name}"
-            priceDifferenceTextView.text = "Price Difference: ${K(item.priceDifference)}K"
+            priceDifferenceTextView.text = "Price Difference: ${K(item.priceDifference)}"
             roiTextView.text = "ROI: ${item.ROI}%"
 
             // Replace spaces with underscores in the iconUrl

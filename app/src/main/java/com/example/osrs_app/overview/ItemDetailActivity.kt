@@ -9,6 +9,8 @@ import androidx.appcompat.app.AppCompatActivity
 import com.bumptech.glide.Glide
 import com.example.osrs_app.R
 import com.example.osrs_app.itemMods.ChartType
+import com.example.osrs_app.itemMods.CustomMarkerView
+import com.example.osrs_app.itemMods.K
 import com.example.osrs_app.itemMods.timeSeriesStats
 import com.example.osrs_app.itemMods.updateChart
 import com.github.mikephil.charting.charts.LineChart
@@ -39,6 +41,8 @@ class ItemDetailActivity : AppCompatActivity() {
         // Update the chart when the activity is opened
         viewModel2.timeSeriesData.observe(this) { timeSeriesData ->
             updateChart(ChartType.HIGH_PRICE, timeSeriesData, lineChart)
+            val mv = CustomMarkerView(this, chartType = "High Price" , layoutResource = R.layout.marker_view)
+            lineChart.marker = mv
             //update the timestats entry for the dataset
             val (firstString, secondString) = timeSeriesStats(viewModel2.timeSeriesData.value)
             timeStats.text = "$firstString $secondString"
@@ -50,12 +54,14 @@ class ItemDetailActivity : AppCompatActivity() {
         val tvPriceDifference = findViewById<TextView>(R.id.tvPriceDifference)
         val tvROI = findViewById<TextView>(R.id.tvROI)
         val ivIcon = findViewById<ImageView>(R.id.ivIcon)
+        val priceData = findViewById<TextView>(R.id.priceData)
 
 
         // Set the data to the respective views
-        tvItemName.text = "Item Name: $itemName"
-        tvPriceDifference.text = "Price Difference: $priceDifference"
+        tvItemName.text = "$itemName"
+        tvPriceDifference.text = "Price Difference: " + K(priceDifference)
         tvROI.text = "ROI: $roi%"
+        priceData.text = ""
 
         // load the image from the API using glide.
         if (iconUrl != null) {
@@ -65,22 +71,32 @@ class ItemDetailActivity : AppCompatActivity() {
                 .into(ivIcon)
         }
 
-
-
-
+    // Set up the buttons to change the chart type
         val highPriceButton: Button = findViewById(R.id.highPriceButton)
         highPriceButton.setOnClickListener {
             updateChart(ChartType.HIGH_PRICE, viewModel2.timeSeriesData.value, lineChart)
+            //create the markerview for the chart
+            //to-do figure out a way to do this inside the update chart function
+            val mv = CustomMarkerView(this, chartType = "High Price" , layoutResource = R.layout.marker_view)
+            lineChart.marker = mv
                     }
 
         val lowPriceButton: Button = findViewById(R.id.lowPriceButton)
         lowPriceButton.setOnClickListener {
             updateChart(ChartType.LOW_PRICE, viewModel2.timeSeriesData.value, lineChart)
+            //create the markerview for the chart
+            //to-do figure out a way to do this inside the update chart function
+            val mv = CustomMarkerView(this, chartType = "Low Price" , layoutResource = R.layout.marker_view)
+            lineChart.marker = mv
         }
 
         val priceDeltaButton: Button = findViewById(R.id.priceDeltaButton)
         priceDeltaButton.setOnClickListener {
             updateChart(ChartType.PRICE_DELTA, viewModel2.timeSeriesData.value, lineChart)
+            //create the markerview for the chart
+            //to-do figure out a way to do this inside the update chart function
+            val mv = CustomMarkerView(this, chartType = "Price Delta" , layoutResource = R.layout.marker_view)
+            lineChart.marker = mv
         }
 
 

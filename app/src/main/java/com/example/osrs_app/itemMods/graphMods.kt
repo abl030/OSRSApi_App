@@ -42,13 +42,22 @@ fun extractHighLowValues(modList: TimeSeriesModList): Triple<Long?, Long?, Long?
 
 fun updateChart(chartType: ChartType, timeSeriesData: TimeSeriesResponse?, lineChart: LineChart) {
     if (timeSeriesData != null) {
+
     //was originally going to filter by time, but there wasn't enough data for the low volume items
         val filteredData = timeSeriesData.data
 
         val entries = ArrayList<Entry>()
 
+        val firstNonNullHighPrice = filteredData.firstOrNull { it.avgHighPrice != null }?.avgHighPrice?.toFloat()
+        val firstNonNullLowPrice = filteredData.firstOrNull { it.avgLowPrice != null }?.avgLowPrice?.toFloat()
+
+        var lastNonNullHighPrice = firstNonNullHighPrice
+        var lastNonNullLowPrice = firstNonNullLowPrice
 
         filteredData.forEachIndexed { _, dataItem ->
+
+            val currentHighPrice = dataItem.avgHighPrice?.toFloat() ?: lastNonNullHighPrice
+            val currentLowPrice = dataItem.avgLowPrice?.toFloat() ?: lastNonNullLowPrice
 
             when (chartType) {
                 ChartType.HIGH_PRICE -> dataItem.avgHighPrice?.let { highPrice ->
@@ -59,17 +68,28 @@ fun updateChart(chartType: ChartType, timeSeriesData: TimeSeriesResponse?, lineC
                     // 'let' is only executed if 'avgLowPrice' is not null
                     entries.add(Entry(dataItem.timestamp.toFloat(), lowPrice.toFloat()))
                 }
-                ChartType.PRICE_DELTA -> dataItem.avgHighPrice?.let { highPrice ->
-                    // If 'avgHighPrice' is not null, we enter this 'let'
-                    dataItem.avgLowPrice?.let { lowPrice ->
-                        // and we enter this one if 'avgLowPrice' is not null
-                        val priceGap = highPrice - lowPrice
-                        entries.add(Entry(dataItem.timestamp.toFloat(), priceGap.toFloat()))
-                    }
+                //my now overly complicated way of getting a price gap at every point in time
+                //before it would only work when there were high and low prices in every time step
+                //the biggest issue is the intent passes the exact current price gap
+                //where as for this chart we are using the time series average data
+                //to-do would be to rewrite the whole codebase to use the time series data instead of the intent data
+                ChartType.PRICE_DELTA -> {
+                    val priceGap = currentHighPrice?.minus(currentLowPrice!!)
+                    priceGap?.let { Entry(dataItem.timestamp.toFloat(), it) }
+                        ?.let { entries.add(it) }
                 }
+                }
+            // Updating the lastNonNullHighPrice and lastNonNullLowPrice
+            if (dataItem.avgHighPrice != null) {
+                lastNonNullHighPrice = currentHighPrice
+            }
+            if (dataItem.avgLowPrice != null) {
+                lastNonNullLowPrice = currentLowPrice
             }
 
         }
+
+
 
         // Create and format the dataset and chart
         val lineDataSet = LineDataSet(entries,
@@ -97,11 +117,21 @@ fun updateChart(chartType: ChartType, timeSeriesData: TimeSeriesResponse?, lineC
         xAxis.labelCount = 5 // Display 3 labels evenly spaced
         xAxis.setLabelCount(5, true)
 
+
+        //remove description
+        lineChart.description = null
+
         //this took so so long. I originally had an index as my x-axis, but that was not what I wanted. I wanted the timestamp!
         xAxis.valueFormatter = DataValueFormatter()
 
+        //set the y-axis to the large value formatter, but with an edit to change all small e's to E's.
         lineChart.axisLeft.valueFormatter = LargeValueFormatterEdit()
         lineChart.axisRight.valueFormatter = LargeValueFormatterEdit()
+
+        //turn off labels, only need the markerView now.
+        lineDataSet.setDrawValues(false)
+
+
 
         // Refresh the chart
         lineChart.invalidate()
@@ -113,24 +143,211 @@ fun updateChart(chartType: ChartType, timeSeriesData: TimeSeriesResponse?, lineC
 fun timeSeriesStats(timeSeriesData: TimeSeriesResponse?): Pair<String?, String?> {
     if (timeSeriesData != null) {
 
-
         val oldestTime = timeSeriesData.data.minByOrNull { it.timestamp }?.timestamp
         val newestTime = timeSeriesData.data.maxByOrNull { it.timestamp }?.timestamp
-        val averageTimeStep = (newestTime?.minus(oldestTime ?: 0))?.div(timeSeriesData.data.size)
+        val averageTimeStep = ((newestTime?.minus(oldestTime ?: 0))?.div(timeSeriesData.data.size)
+            ?.div(60))
 
-        //val formatNew = formatDate(newestTime ?: 0)
         val formatOld = formatDate(oldestTime ?: 0)
 
-        if (averageTimeStep != null) {
-            return Pair(
-                "The oldest sale in this data set is $formatOld while the average time between sales is",
-                (averageTimeStep / 60).toString() + " minutes"
-            )
+        val stringBuilder = StringBuilder()
+
+        if (averageTimeStep != null && averageTimeStep > 0) {
+            stringBuilder.append("Average high time step in minutes: ${averageHighTimeStepInMinutes(timeSeriesData)}. ")
+            stringBuilder.append("with volume: ${highPriceVolume(timeSeriesData)}. ")
+            stringBuilder.append("Average low time step in minutes: ${averageLowTimeStepInMinutes(timeSeriesData)}. ")
+            stringBuilder.append("with volume: ${lowPriceVolume(timeSeriesData)}. ")
+
+            stringBuilder.append("High to low ratio: ${hightolowratioString(timeSeriesData)}. ")
+            stringBuilder.append("Potential profit per flip: ${profitPerFlipInt(timeSeriesData)?.let { K(it) } ?: "null"}. ")
+            stringBuilder.append("Potential profit per hour: ${potentialProfitPerHour(timeSeriesData)?.let { K(it) } ?: "null"}. ")
+            stringBuilder.append("Suggested buy offer price: ${K(suggestedBuyOfferPriceInt(timeSeriesData))}. ")
+            stringBuilder.append("Suggested sell offer price: ${K(suggestedSellOfferPriceInt(timeSeriesData))}. ")
+            stringBuilder.append("Suggested profit per hour: ${K(suggestedProfitPerHourInt(timeSeriesData))}.")
+
+            return Pair(" ", stringBuilder.toString())
+        } else {
+            return Pair("The average sale time is below the granularity of the time series data", "The dataset cannot determine volumes")
         }
-    } else {
-        return Pair(null, null)
     }
     return Pair(null, null)
+}
+
+
+//function taking in timeSeriesData and finding the number of times the high price has changed
+fun highPriceChanges(timeSeriesData: TimeSeriesResponse?): Int {
+    val highPriceChanges = timeSeriesData?.data?.count { it.avgHighPrice != null }
+    return highPriceChanges ?: 0
+}
+
+fun lowPriceChanges(timeSeriesData: TimeSeriesResponse?): Int {
+    val lowPriceChanges = timeSeriesData?.data?.count { it.avgLowPrice != null }
+    return lowPriceChanges ?: 0
+}
+
+fun highPriceVolume(timeSeriesData: TimeSeriesResponse?): Int {
+    val highPriceVolume = timeSeriesData?.data?.sumOf { it.highPriceVolume }
+    return highPriceVolume ?: 0
+}
+
+fun lowPriceVolume(timeSeriesData: TimeSeriesResponse?): Int {
+    val lowPriceVolume = timeSeriesData?.data?.sumOf { it.lowPriceVolume }
+    return lowPriceVolume ?: 0
+}
+
+fun averageHighTimeStepInMinutes(timeSeriesData: TimeSeriesResponse?): Double? {
+    val oldestTime = timeSeriesData?.data?.filter { it.avgHighPrice != null }?.minByOrNull { it.timestamp }?.timestamp
+    val newestTime = timeSeriesData?.data?.filter { it.avgHighPrice != null }?.maxByOrNull { it.timestamp }?.timestamp
+    val highPriceVolume = highPriceVolume(timeSeriesData).toDouble()
+
+    return (newestTime?.toDouble()?.minus(oldestTime?.toDouble() ?: 0.0))?.div(highPriceVolume)?.div(60.0)
+}
+
+
+fun averageLowTimeStepInMinutes(timeSeriesData: TimeSeriesResponse?): Double? {
+    val oldestTime = timeSeriesData?.data?.filter { it.avgLowPrice != null }?.minByOrNull { it.timestamp }?.timestamp
+    val newestTime = timeSeriesData?.data?.filter { it.avgLowPrice != null }?.maxByOrNull { it.timestamp }?.timestamp
+    val lowPriceVolume = lowPriceVolume(timeSeriesData).toDouble()
+    val averageLowTimeStep = ((newestTime?.minus(oldestTime ?: 0))?.div(lowPriceVolume(timeSeriesData))
+        ?.div(60))
+    return (newestTime?.toDouble()?.minus(oldestTime?.toDouble() ?: 0.0))?.div(lowPriceVolume)?.div(60.0)
+}
+
+fun hightolowratioString(timeSeriesData: TimeSeriesResponse?): String {
+    val highVol = highPriceVolume(timeSeriesData).toDouble()
+    val lowVol = lowPriceVolume(timeSeriesData).toDouble()
+    val highToLowRatio = highVol / lowVol
+    return String.format("%.2f", highToLowRatio)
+}
+
+fun profitPerFlipInt(timeSeriesData: TimeSeriesResponse?): Int? {
+    val recentHighPrice = timeSeriesData?.data?.filter { it.avgHighPrice != null }?.maxByOrNull { it.timestamp }?.avgHighPrice
+    val recentLowPrice = timeSeriesData?.data?.filter { it.avgLowPrice != null }?.maxByOrNull { it.timestamp }?.avgLowPrice
+    var taxAmount = findTaxValueInt(timeSeriesData)
+
+    return (taxAmount?.let { recentHighPrice?.minus(recentLowPrice!!)?.minus(it) })?.toInt()
+}
+
+fun findTaxValueInt(timeSeriesData: TimeSeriesResponse?): Int? {
+    val recentHighPrice = timeSeriesData?.data?.filter { it.avgHighPrice != null }?.maxByOrNull { it.timestamp }?.avgHighPrice
+
+    if (recentHighPrice != null && recentHighPrice <= 99) {
+        return 0
+    }
+
+    if (recentHighPrice != null) {
+        return if (recentHighPrice > 500000000) {
+            5000000
+        } else {
+            (recentHighPrice * 0.01).toInt()
+        }
+    } else {
+        return 0
+    }
+}
+fun potentialProfitPerHour(timeSeriesData: TimeSeriesResponse?): Int? {
+    val avgHighPriceTime = averageHighTimeStepInMinutes(timeSeriesData)
+    val avgLowPriceTime = averageLowTimeStepInMinutes(timeSeriesData)
+
+    if (avgHighPriceTime != null) {
+        return if (avgHighPriceTime < avgLowPriceTime!!) {
+            val profitPerHour =
+                (profitPerFlipInt(timeSeriesData)?.div(avgHighPriceTime))?.times(60)
+            profitPerHour?.toInt()
+        } else {
+            val profitPerHour =
+                (profitPerFlipInt(timeSeriesData)?.div(avgLowPriceTime))?.times(60)
+            profitPerHour?.toInt()
+        }
+    }
+    else {
+        return 0
+    }
+}
+
+fun suggestedBuyOfferPriceInt(timeSeriesData: TimeSeriesResponse?): Int {
+    val sortedData =
+        timeSeriesData?.data?.filter { it.avgLowPrice != null }?.sortedByDescending { it.timestamp }
+    val recentlowPrice = timeSeriesData?.data?.filter { it.avgLowPrice != null }
+        ?.maxByOrNull { it.timestamp }?.avgLowPrice
+    val secondNewestLowPrice =
+        sortedData?.getOrNull(1)?.avgLowPrice
+
+    // Check if recent low price is between 1 and 5 million
+    if (recentlowPrice != null && recentlowPrice > 1_000_000 && recentlowPrice < 5_000_000) {
+        return recentlowPrice.toInt() + 1000
+    }
+
+    if (recentlowPrice != null && recentlowPrice < 1_000_000 && recentlowPrice > 10_000) {
+        return recentlowPrice.toInt() + 100
+    }
+
+    if (recentlowPrice != null && recentlowPrice < 10_000 && recentlowPrice < 100) {
+        return recentlowPrice.toInt() + 1
+    }
+
+    if (recentlowPrice != null && recentlowPrice < 100) {
+        return recentlowPrice.toInt()
+    }
+
+    return if (recentlowPrice != null) {
+        if (recentlowPrice < secondNewestLowPrice!!) {
+            (recentlowPrice + 100000).toInt()
+        } else {
+
+            val suggestedBuyOfferPrice =
+                recentlowPrice?.plus(((recentlowPrice?.minus(secondNewestLowPrice!!)!!)))
+            suggestedBuyOfferPrice?.toInt() ?: 0
+        }
+    } else {
+        0
+    }
+}
+
+fun suggestedSellOfferPriceInt(timeSeriesData: TimeSeriesResponse?): Int{
+    val sortedData = timeSeriesData?.data?.filter { it.avgHighPrice != null }?.sortedByDescending { it.timestamp }
+    val recentHighPrice = timeSeriesData?.data?.filter { it.avgHighPrice != null }
+        ?.maxByOrNull { it.timestamp }?.avgHighPrice
+    val secondNewestHighPrice =
+        sortedData?.getOrNull(1)?.avgHighPrice
+    if (recentHighPrice != null && recentHighPrice < 100){
+        return recentHighPrice.toInt()
+    }
+
+    if (recentHighPrice != null) {
+        if (recentHighPrice > secondNewestHighPrice!!) {
+            return (recentHighPrice - 100000).toInt()
+        } else {
+
+            val suggestedBuyOfferPrice =
+                recentHighPrice?.minus(((secondNewestHighPrice?.minus(recentHighPrice!!)!!)))
+            return suggestedBuyOfferPrice?.toInt() ?: 0
+        }
+    } else {
+        return 0
+    }
+
+}
+
+fun suggestedProfitPerHourInt(timeSeriesData: TimeSeriesResponse?): Int {
+    val avgHighPriceTime = averageHighTimeStepInMinutes(timeSeriesData)
+    val avgLowPriceTime = averageLowTimeStepInMinutes(timeSeriesData)
+    val taxValue = findTaxValueInt(timeSeriesData)
+
+    if (avgHighPriceTime != null) {
+        return if (avgHighPriceTime <= avgLowPriceTime!!) {
+            val profitPerHour =
+                (((suggestedSellOfferPriceInt(timeSeriesData) - suggestedBuyOfferPriceInt(timeSeriesData)) - taxValue!!) / avgHighPriceTime * 60)
+            profitPerHour.toInt()
+        } else {
+            val profitPerHour =
+                (((suggestedSellOfferPriceInt(timeSeriesData) - suggestedBuyOfferPriceInt(timeSeriesData))- taxValue!!) / avgLowPriceTime * 60)
+            profitPerHour.toInt()
+        }
+    }
+    else {
+        return 0
+    }
 }
 
 //function to return a formatted date string
@@ -145,5 +362,7 @@ class DataValueFormatter: ValueFormatter() {
         return formatDate(value.toLong())
     }
 }
+
+
 
 

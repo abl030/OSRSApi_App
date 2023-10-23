@@ -5,6 +5,7 @@ import com.example.osrs_app.overview.ItemPriceDifference
 import com.example.osrs_app.overview.MappingData
 import com.example.osrs_app.overview.OSRSItem
 import com.example.osrs_app.overview.OSRSLatestPriceData
+import java.lang.Math.abs
 
 //Takes an OSRSItem as input.
 //Returns the ROI (Return on Investment) as a double
@@ -100,10 +101,17 @@ fun removeLowValueItems(combinedList: List<CombinedItem>): List<CombinedItem> {
 }
 
 //takes in the pricedifference int, divdes it by 1000 and returns as an int (the K function)
-fun K(priceDifference: Int): Int {
-    val K = priceDifference / 1000
-    return K
+fun K(priceDifference: Int): String {
+    if (abs(priceDifference) > 1000) {
+        val K = (priceDifference / 1000).toString() + "k"
+        return K
+    }
+    else {
+        return priceDifference.toString() + " GP"
+    }
 }
+
+
 
 
 //takes in a combined list as input and returns a new list with just item name, ROI and price difference

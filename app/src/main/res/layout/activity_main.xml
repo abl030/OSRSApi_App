@@ -40,22 +40,26 @@
         android:layout_below="@id/firstLayout"
         android:id="@+id/secondLayout">
 
+
+
     <EditText
         android:id="@+id/searchInput"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_weight="1"
         android:hint="Search items by name"
-        android:inputType="text" />
+        android:inputType="text"
+        />
 
     </LinearLayout>
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recyclerView2"
-        android:layout_width="match_parent"
-        android:layout_height="384dp"
+        android:layout_width="399dp"
+        android:layout_height="461dp"
+        android:layout_below="@id/secondLayout"
+        android:layout_marginTop="-7dp"
         android:clipToPadding="false"
-        android:scrollbars="vertical"
-        android:layout_below="@id/secondLayout" />
+        android:scrollbars="vertical" />
 
 </RelativeLayout>
