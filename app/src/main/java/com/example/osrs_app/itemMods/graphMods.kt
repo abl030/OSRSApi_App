@@ -146,7 +146,7 @@ fun updateChart(chartType: ChartType, timeSeriesData: TimeSeriesResponse?, lineC
 //essentially a test function to make sure everything is working. Not used in the app.
 fun timeSeriesStats(timeSeriesData: TimeSeriesResponse?): Pair<String?, String?> {
     if (timeSeriesData != null) {
-
+    val limit = 0
         val oldestTime = timeSeriesData.data.minByOrNull { it.timestamp }?.timestamp
         val newestTime = timeSeriesData.data.maxByOrNull { it.timestamp }?.timestamp
         val averageTimeStep = ((newestTime?.minus(oldestTime ?: 0))?.div(timeSeriesData.data.size)
@@ -166,7 +166,7 @@ fun timeSeriesStats(timeSeriesData: TimeSeriesResponse?): Pair<String?, String?>
             stringBuilder.append("Potential profit per hour: ${potentialProfitPerHour(timeSeriesData)?.let { kFormatter(it) } ?: "null"}. ")
             stringBuilder.append("Suggested buy offer price: ${kFormatter(suggestedBuyOfferPriceInt(timeSeriesData))}. ")
             stringBuilder.append("Suggested sell offer price: ${kFormatter(suggestedSellOfferPriceInt(timeSeriesData))}. ")
-            stringBuilder.append("Suggested profit per hour: ${kFormatter(suggestedProfitPerHourInt(timeSeriesData))}.")
+            stringBuilder.append("Suggested profit per hour: ${kFormatter(suggestedProfitPerHourInt(timeSeriesData, limit))}.")
 
             return Pair(" ", stringBuilder.toString())
         } else {
@@ -238,28 +238,31 @@ fun ratioWarnings(ratio: String?): String {
 fun profitPerFlipInt(timeSeriesData: TimeSeriesResponse?): Int? {
     val recentHighPrice = timeSeriesData?.data?.filter { it.avgHighPrice != null }?.maxByOrNull { it.timestamp }?.avgHighPrice
     val recentLowPrice = timeSeriesData?.data?.filter { it.avgLowPrice != null }?.maxByOrNull { it.timestamp }?.avgLowPrice
-    val taxAmount = findTaxValueInt(timeSeriesData)
+    val taxAmount = findTaxValueTimeSeries(timeSeriesData)
 
     return (taxAmount.let { recentHighPrice?.minus(recentLowPrice!!)?.minus(it) })?.toInt()
 }
 
-fun findTaxValueInt(timeSeriesData: TimeSeriesResponse?): Int {
+fun findTaxValueTimeSeries(timeSeriesData: TimeSeriesResponse?): Int {
     val recentHighPrice = timeSeriesData?.data?.filter { it.avgHighPrice != null }?.maxByOrNull { it.timestamp }?.avgHighPrice
 
-    if (recentHighPrice != null && recentHighPrice <= 99) {
+    return findTaxValueTimeInt(recentHighPrice?.toInt() ?: 0)
+
+}
+
+fun findTaxValueTimeInt(recentHighPrice: Int): Int{
+    if (recentHighPrice <= 99) {
         return 0
     }
 
-    return if (recentHighPrice != null) {
-        if (recentHighPrice > 500000000) {
-            5000000
-        } else {
-            (recentHighPrice * 0.01).toInt()
-        }
+    return if (recentHighPrice > 500000000) {
+        5000000
     } else {
-        0
+        (recentHighPrice * 0.01).toInt()
     }
 }
+
+
 fun potentialProfitPerHour(timeSeriesData: TimeSeriesResponse?): Int? {
     val avgHighPriceTime = averageHighTimeStepInMinutes(timeSeriesData)
     val avgLowPriceTime = averageLowTimeStepInMinutes(timeSeriesData)
@@ -297,7 +300,7 @@ fun suggestedBuyOfferPriceInt(timeSeriesData: TimeSeriesResponse?): Int {
         return recentlowPrice.toInt() + 100
     }
 
-    if (recentlowPrice != null && recentlowPrice <= 10_000 && recentlowPrice < 100) {
+    if (recentlowPrice != null && recentlowPrice <= 10_000 && recentlowPrice > 100) {
         return recentlowPrice.toInt() + 1
     }
 
@@ -307,63 +310,100 @@ fun suggestedBuyOfferPriceInt(timeSeriesData: TimeSeriesResponse?): Int {
 
     return if (recentlowPrice != null) {
         if (recentlowPrice < secondNewestLowPrice!!) {
-            (recentlowPrice + 100000).toInt()
+            (recentlowPrice + 100_000).toInt()
         } else {
 
             val suggestedBuyOfferPrice =
                 recentlowPrice.plus(((recentlowPrice.minus(secondNewestLowPrice))))
-            suggestedBuyOfferPrice.toInt()
+            kotlin.math.min(suggestedBuyOfferPrice, recentlowPrice + 500_000).toInt()
         }
     } else {
         0
     }
 }
 
-fun suggestedSellOfferPriceInt(timeSeriesData: TimeSeriesResponse?): Int{
-    val sortedData = timeSeriesData?.data?.filter { it.avgHighPrice != null }?.sortedByDescending { it.timestamp }
+fun suggestedSellOfferPriceInt(timeSeriesData: TimeSeriesResponse?): Int {
+    val sortedData = timeSeriesData?.data?.filter { it.avgHighPrice != null }
+        ?.sortedByDescending { it.timestamp }
     val recentHighPrice = timeSeriesData?.data?.filter { it.avgHighPrice != null }
         ?.maxByOrNull { it.timestamp }?.avgHighPrice
-    val secondNewestHighPrice =
-        sortedData?.getOrNull(1)?.avgHighPrice
-    if (recentHighPrice != null && recentHighPrice < 100){
+    val secondNewestHighPrice = sortedData?.getOrNull(1)?.avgHighPrice
+
+    // Check if recent high price is between 1 and 5 million
+    if (recentHighPrice != null && recentHighPrice > 1_000_000 && recentHighPrice < 5_000_000) {
+        return recentHighPrice.toInt() - 1000
+    }
+
+    if (recentHighPrice != null && recentHighPrice <= 1_000_000 && recentHighPrice > 10_000) {
+        return recentHighPrice.toInt() - 100
+    }
+
+    if (recentHighPrice != null && recentHighPrice <= 10_000 && recentHighPrice > 100) {
+        return recentHighPrice.toInt() - 1
+    }
+
+    if (recentHighPrice != null && recentHighPrice <= 100) {
         return recentHighPrice.toInt()
     }
 
-    return if (recentHighPrice != null) {
-        if (recentHighPrice > secondNewestHighPrice!!) {
-            (recentHighPrice - 100000).toInt()
+    if (recentHighPrice != null) {
+        return if (recentHighPrice > secondNewestHighPrice!!) {
+            (recentHighPrice - 100_000).toInt()
         } else {
-
-            val suggestedBuyOfferPrice =
-                recentHighPrice.minus(((secondNewestHighPrice.minus(recentHighPrice))))
-            suggestedBuyOfferPrice.toInt()
+            val calculatedSellOfferPrice =
+                recentHighPrice.minus(secondNewestHighPrice.minus(recentHighPrice))
+            kotlin.math.max(calculatedSellOfferPrice, recentHighPrice - 500000).toInt()
         }
     } else {
-        0
+        return 0
     }
-
 }
 
-fun suggestedProfitPerHourInt(timeSeriesData: TimeSeriesResponse?): Int {
+
+
+fun suggestedProfitPerHourInt(timeSeriesData: TimeSeriesResponse?, limit: Int): Int {
     val avgHighPriceTime = averageHighTimeStepInMinutes(timeSeriesData)
     val avgLowPriceTime = averageLowTimeStepInMinutes(timeSeriesData)
-    val taxValue = findTaxValueInt(timeSeriesData)
+    val taxValue = findTaxValueTimeSeries(timeSeriesData)
 
-    return if (avgHighPriceTime != null) {
-        if (avgHighPriceTime >= avgLowPriceTime!!) {
-            val profitPerHour =
-                (((suggestedSellOfferPriceInt(timeSeriesData) - suggestedBuyOfferPriceInt(timeSeriesData)) - taxValue) / avgHighPriceTime * 60)
-            profitPerHour.toInt()
+    // Calculate profit per item
+    val profitPerItem = (suggestedSellOfferPriceInt(timeSeriesData) - suggestedBuyOfferPriceInt(timeSeriesData)) - taxValue
+
+    // If limit is zero, just return profit per hour without the limit modifier
+    if (limit == 0) {
+        return if (avgHighPriceTime != null) {
+            if (avgHighPriceTime >= avgLowPriceTime!!) {
+                val profitPerHour = profitPerItem / avgHighPriceTime * 60
+                profitPerHour.toInt()
+            } else {
+                val profitPerHour = profitPerItem / avgLowPriceTime * 60
+                profitPerHour.toInt()
+            }
         } else {
-            val profitPerHour =
-                (((suggestedSellOfferPriceInt(timeSeriesData) - suggestedBuyOfferPriceInt(timeSeriesData))- taxValue) / avgLowPriceTime * 60)
-            profitPerHour.toInt()
+            0
         }
     }
-    else {
-        0
+
+    // Calculate turnover rate based on avgHighPriceTime and avgLowPriceTime
+    val turnoverRate = if (avgHighPriceTime != null && avgLowPriceTime !=null) {
+        if (avgHighPriceTime >= avgLowPriceTime) {
+            60.0 / avgHighPriceTime
+        } else {
+            60.0 / avgLowPriceTime
+        }
+    } else {
+        0.0
     }
+
+    // Calculate number of items you can sell within 6 hours considering the turnover rate and limit
+    val numItems = kotlin.math.min(turnoverRate * 360, limit.toDouble())
+
+    // Calculate profit per hour with the limit modifier
+    val profitPerHour = profitPerItem * numItems / 6
+
+    return profitPerHour.toInt()
 }
+
 
 //function to return a formatted date string
 fun formatDate(date: Long): String {

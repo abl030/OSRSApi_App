@@ -34,7 +34,7 @@ class ItemDetailActivity : AppCompatActivity() {
         // Retrieve the data from the Intent
         val itemName = intent.getStringExtra("ITEM_NAME")
         val priceDifference = intent.getIntExtra("PRICE_DIFFERENCE", 0)
-        val roi = intent.getIntExtra("ROI", 0)
+        val roi = intent.getDoubleExtra("ROI", 0.0)
         val iconUrl = intent.getStringExtra("ICON_URL")
         val itemId = intent.getStringExtra("ITEM_ID")
         val highPrice = intent.getIntExtra("HIGH_PRICE", 0)
@@ -50,7 +50,7 @@ class ItemDetailActivity : AppCompatActivity() {
 
         // Get the chart view and timestats set up
         val lineChart: LineChart = findViewById(R.id.lineChart)
-        val timeStats = findViewById<TextView>(R.id.timestats)
+
 
         // Update the chart when the activity is opened
         viewModel2.timeSeriesData.observe(this) { timeSeriesData ->
@@ -85,7 +85,7 @@ class ItemDetailActivity : AppCompatActivity() {
             // Set the data to the respective views
             tvItemName.text = "$itemName"
             tvPriceDifference.text = "Price Difference: " + kFormatter(priceDifference)
-            tvROI.text = "ROI: $roi%"
+            tvROI.text = "ROI: " + String.format("%.2f", roi) + "%"
             highPriceIntent.text = "High Price: " + kFormatter(highPrice)
             lowPrice.text = "Low Price: " + kFormatter(lowPriceIntent)
             limitView.text = "Limit: " + limitFormatter(limit)
@@ -112,25 +112,19 @@ class ItemDetailActivity : AppCompatActivity() {
                 }
 
                 potProfitHour.text =
-                    suggestedProfitPerHourInt(viewModel2.timeSeriesData.value)?.let { it1 ->
-                        kFormatter(
-                            it1
-                        )
-                    }
+                    kFormatter(
+                        suggestedProfitPerHourInt(viewModel2.timeSeriesData.value, limit)
+                    )
 
                 suggestedBuyPrice.text =
-                    suggestedBuyOfferPriceInt(viewModel2.timeSeriesData.value)?.let { it1 ->
-                        kFormatter(
-                            it1
-                        )
-                    }
+                    kFormatter(
+                        suggestedBuyOfferPriceInt(viewModel2.timeSeriesData.value)
+                    )
 
                 suggestedSellPrice.text =
-                    suggestedSellOfferPriceInt(viewModel2.timeSeriesData.value)?.let { it1 ->
-                        kFormatter(
-                            it1
-                        )
-                    }
+                    kFormatter(
+                        suggestedSellOfferPriceInt(viewModel2.timeSeriesData.value)
+                    )
 
 
             }

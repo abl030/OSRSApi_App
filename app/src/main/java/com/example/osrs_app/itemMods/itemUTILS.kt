@@ -16,8 +16,8 @@ fun calculateROI(item: OSRSItem): Double {
 
     // Ensure that the denominator (low) is not zero to avoid division by zero
     return if (low != 0) {
-        // Calculate ROI as (high - low) / low * 100
-        ((high - low) / low.toDouble()) * 100.0
+                // Calculate ROI as (high - low) / low * 100
+        ((high - low - findTaxValueTimeInt(high)) / low.toDouble()) * 100.0
     } else {
         // Handle the case where low is zero (ROI undefined)
         Double.NaN
@@ -41,7 +41,7 @@ fun combineLatestAndMappingData(latestData: OSRSLatestPriceData, mappingData: Li
                 item.low ?: 0,
                 item.lowTime ?: 0,
                 item.high?.minus(item.low ?: 0) ?: 0,
-                (calculateROI(item) * 100 / 100).toInt(),
+                (calculateROI(item) * 100 / 100),
                 mappingDataTemp.name,
                 mappingDataTemp.examine,
                 mappingDataTemp.icon,
@@ -98,14 +98,14 @@ fun kFormatter(priceDifference: Int): String {
     val absValue = kotlin.math.abs(priceDifference).toDouble()
 
     return when {
-        absValue >= 1_000_000_000 -> {
-            String.format("%.3fB", priceDifference / 1_000_000_000.0)
+        absValue >= 10_000_000_000 -> {
+            String.format("%.6f B", priceDifference / 1_000_000_000.0)
         }
         absValue >= 1_000_000 -> {
-            String.format("%.3fM", priceDifference / 1_000_000.0)
+            String.format("%.3f M", priceDifference / 1_000_000.0)
         }
         absValue >= 1_000 -> {
-            String.format("%.0fK", priceDifference / 1_000.0)
+            String.format("%.0f K", priceDifference / 1_000.0)
         }
         else -> {
             "$priceDifference GP"

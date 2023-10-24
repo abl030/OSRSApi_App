@@ -55,7 +55,7 @@ class MainActivity : AppCompatActivity() {
                         var combinedList = removeLowValueItems(sortByTime(combineLatestAndMappingData(latestData, mappingInfo)))
 
                         //then we sort by ROI and take the top 20 items
-                        combinedList = combinedList.sortedByDescending { it.roi }
+                        combinedList = combinedList.sortedByDescending { it.priceDifference }
                         combinedList = combinedList.take(20)
                         val combinedList2 = priceList(combinedList)
 
