@@ -142,7 +142,8 @@ fun updateChart(chartType: ChartType, timeSeriesData: TimeSeriesResponse?, lineC
 }
 
 
-//function to work out the oldest and newest time in the list as well as the average timestep between each entry
+//function to work out the oldest and newest time in the list as well as the average time-step between each entry
+//essentially a test function to make sure everything is working. Not used in the app.
 fun timeSeriesStats(timeSeriesData: TimeSeriesResponse?): Pair<String?, String?> {
     if (timeSeriesData != null) {
 
@@ -151,7 +152,6 @@ fun timeSeriesStats(timeSeriesData: TimeSeriesResponse?): Pair<String?, String?>
         val averageTimeStep = ((newestTime?.minus(oldestTime ?: 0))?.div(timeSeriesData.data.size)
             ?.div(60))
 
-        val formatOld = formatDate(oldestTime ?: 0)
 
         val stringBuilder = StringBuilder()
 
@@ -238,34 +238,34 @@ fun ratioWarnings(ratio: String?): String {
 fun profitPerFlipInt(timeSeriesData: TimeSeriesResponse?): Int? {
     val recentHighPrice = timeSeriesData?.data?.filter { it.avgHighPrice != null }?.maxByOrNull { it.timestamp }?.avgHighPrice
     val recentLowPrice = timeSeriesData?.data?.filter { it.avgLowPrice != null }?.maxByOrNull { it.timestamp }?.avgLowPrice
-    var taxAmount = findTaxValueInt(timeSeriesData)
+    val taxAmount = findTaxValueInt(timeSeriesData)
 
-    return (taxAmount?.let { recentHighPrice?.minus(recentLowPrice!!)?.minus(it) })?.toInt()
+    return (taxAmount.let { recentHighPrice?.minus(recentLowPrice!!)?.minus(it) })?.toInt()
 }
 
-fun findTaxValueInt(timeSeriesData: TimeSeriesResponse?): Int? {
+fun findTaxValueInt(timeSeriesData: TimeSeriesResponse?): Int {
     val recentHighPrice = timeSeriesData?.data?.filter { it.avgHighPrice != null }?.maxByOrNull { it.timestamp }?.avgHighPrice
 
     if (recentHighPrice != null && recentHighPrice <= 99) {
         return 0
     }
 
-    if (recentHighPrice != null) {
-        return if (recentHighPrice > 500000000) {
+    return if (recentHighPrice != null) {
+        if (recentHighPrice > 500000000) {
             5000000
         } else {
             (recentHighPrice * 0.01).toInt()
         }
     } else {
-        return 0
+        0
     }
 }
 fun potentialProfitPerHour(timeSeriesData: TimeSeriesResponse?): Int? {
     val avgHighPriceTime = averageHighTimeStepInMinutes(timeSeriesData)
     val avgLowPriceTime = averageLowTimeStepInMinutes(timeSeriesData)
 
-    if (avgHighPriceTime != null) {
-        return if (avgHighPriceTime >= avgLowPriceTime!!) {
+    return if (avgHighPriceTime != null) {
+        if (avgHighPriceTime >= avgLowPriceTime!!) {
             val profitPerHour =
                 (profitPerFlipInt(timeSeriesData)?.div(avgHighPriceTime))?.times(60)
             profitPerHour?.toInt()
@@ -276,7 +276,7 @@ fun potentialProfitPerHour(timeSeriesData: TimeSeriesResponse?): Int? {
         }
     }
     else {
-        return 0
+        0
     }
 }
 
@@ -293,15 +293,15 @@ fun suggestedBuyOfferPriceInt(timeSeriesData: TimeSeriesResponse?): Int {
         return recentlowPrice.toInt() + 1000
     }
 
-    if (recentlowPrice != null && recentlowPrice < 1_000_000 && recentlowPrice > 10_000) {
+    if (recentlowPrice != null && recentlowPrice <= 1_000_000 && recentlowPrice > 10_000) {
         return recentlowPrice.toInt() + 100
     }
 
-    if (recentlowPrice != null && recentlowPrice < 10_000 && recentlowPrice < 100) {
+    if (recentlowPrice != null && recentlowPrice <= 10_000 && recentlowPrice < 100) {
         return recentlowPrice.toInt() + 1
     }
 
-    if (recentlowPrice != null && recentlowPrice < 100) {
+    if (recentlowPrice != null && recentlowPrice <= 100) {
         return recentlowPrice.toInt()
     }
 
@@ -311,8 +311,8 @@ fun suggestedBuyOfferPriceInt(timeSeriesData: TimeSeriesResponse?): Int {
         } else {
 
             val suggestedBuyOfferPrice =
-                recentlowPrice?.plus(((recentlowPrice?.minus(secondNewestLowPrice!!)!!)))
-            suggestedBuyOfferPrice?.toInt() ?: 0
+                recentlowPrice.plus(((recentlowPrice.minus(secondNewestLowPrice))))
+            suggestedBuyOfferPrice.toInt()
         }
     } else {
         0
@@ -329,17 +329,17 @@ fun suggestedSellOfferPriceInt(timeSeriesData: TimeSeriesResponse?): Int{
         return recentHighPrice.toInt()
     }
 
-    if (recentHighPrice != null) {
+    return if (recentHighPrice != null) {
         if (recentHighPrice > secondNewestHighPrice!!) {
-            return (recentHighPrice - 100000).toInt()
+            (recentHighPrice - 100000).toInt()
         } else {
 
             val suggestedBuyOfferPrice =
-                recentHighPrice?.minus(((secondNewestHighPrice?.minus(recentHighPrice!!)!!)))
-            return suggestedBuyOfferPrice?.toInt() ?: 0
+                recentHighPrice.minus(((secondNewestHighPrice.minus(recentHighPrice))))
+            suggestedBuyOfferPrice.toInt()
         }
     } else {
-        return 0
+        0
     }
 
 }
@@ -349,19 +349,19 @@ fun suggestedProfitPerHourInt(timeSeriesData: TimeSeriesResponse?): Int {
     val avgLowPriceTime = averageLowTimeStepInMinutes(timeSeriesData)
     val taxValue = findTaxValueInt(timeSeriesData)
 
-    if (avgHighPriceTime != null) {
-        return if (avgHighPriceTime >= avgLowPriceTime!!) {
+    return if (avgHighPriceTime != null) {
+        if (avgHighPriceTime >= avgLowPriceTime!!) {
             val profitPerHour =
-                (((suggestedSellOfferPriceInt(timeSeriesData) - suggestedBuyOfferPriceInt(timeSeriesData)) - taxValue!!) / avgHighPriceTime * 60)
+                (((suggestedSellOfferPriceInt(timeSeriesData) - suggestedBuyOfferPriceInt(timeSeriesData)) - taxValue) / avgHighPriceTime * 60)
             profitPerHour.toInt()
         } else {
             val profitPerHour =
-                (((suggestedSellOfferPriceInt(timeSeriesData) - suggestedBuyOfferPriceInt(timeSeriesData))- taxValue!!) / avgLowPriceTime * 60)
+                (((suggestedSellOfferPriceInt(timeSeriesData) - suggestedBuyOfferPriceInt(timeSeriesData))- taxValue) / avgLowPriceTime * 60)
             profitPerHour.toInt()
         }
     }
     else {
-        return 0
+        0
     }
 }
 

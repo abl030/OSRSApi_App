@@ -51,17 +51,17 @@ class MainActivity : AppCompatActivity() {
                         // here we create our combined list from the price and mapping data
                         // then sort it by time, removing items that haven't traded in 24 hours
                         // then we remove all the low value items not worth our time.
-                        var searchlist = combineLatestAndMappingData(latestData, mappingInfo)
-                        var combinedlist = removeLowValueItems(sortByTime(combineLatestAndMappingData(latestData, mappingInfo)))
+                        val searchList = combineLatestAndMappingData(latestData, mappingInfo)
+                        var combinedList = removeLowValueItems(sortByTime(combineLatestAndMappingData(latestData, mappingInfo)))
 
                         //then we sort by ROI and take the top 20 items
-                        combinedlist = combinedlist.sortedByDescending { it.roi }
-                        combinedlist = combinedlist.take(20)
-                        val combinedlist2 = priceList(combinedlist)
+                        combinedList = combinedList.sortedByDescending { it.roi }
+                        combinedList = combinedList.take(20)
+                        val combinedList2 = priceList(combinedList)
 
                         //then we display the list in a recycler view
                         recyclerView = findViewById(R.id.recyclerView)
-                        itemPriceDifferenceAdapter = ItemPriceDifferenceAdapter(combinedlist2)
+                        itemPriceDifferenceAdapter = ItemPriceDifferenceAdapter(combinedList2)
 
                         recyclerView.adapter = itemPriceDifferenceAdapter
                         recyclerView.layoutManager = LinearLayoutManager(this)
@@ -82,7 +82,7 @@ class MainActivity : AppCompatActivity() {
                             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
                                 // When the text changes, filter your data based on the search input
                                 val searchQuery = s.toString().lowercase(Locale.ROOT)
-                                val filteredList = searchlist.filter { item ->
+                                val filteredList = searchList.filter { item ->
                                     item.name?.lowercase(
                                         Locale.ROOT)
                                         ?.contains(searchQuery) ?: true
