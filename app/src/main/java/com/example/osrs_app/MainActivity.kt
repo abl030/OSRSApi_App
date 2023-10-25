@@ -54,39 +54,40 @@ class MainActivity : AppCompatActivity() {
                         val searchList = combineLatestAndMappingData(latestData, mappingInfo)
                         var combinedList = removeLowValueItems(sortByTime(combineLatestAndMappingData(latestData, mappingInfo)))
 
-                        //then we sort by ROI and take the top 20 items
+                        //then we sort by ROI and take the top 20 items but only for items actually worth flipping
                         combinedList = combinedList.sortedByDescending { it.priceDifference }
-                        combinedList = combinedList.take(20)
+                        combinedList = combinedList.take(30)
+                        combinedList = combinedList.sortedByDescending { it.roi }
                         val combinedList2 = priceList(combinedList)
 
                         //then we display the list in a recycler view
                         recyclerView = findViewById(R.id.recyclerView)
                         itemPriceDifferenceAdapter = ItemPriceDifferenceAdapter(combinedList2)
-
                         recyclerView.adapter = itemPriceDifferenceAdapter
                         recyclerView.layoutManager = LinearLayoutManager(this)
 
-
+                        //then we set up the search bar
                         val searchInput = findViewById<EditText>(R.id.searchInput)
                         val recyclerView2 = findViewById<RecyclerView>(R.id.recyclerView2)
 
-
+                        //which will also have a recycler view
                         recyclerView2.layoutManager = LinearLayoutManager(this)
 
-
+                        //wildcard search on the full list of items
                         searchInput.addTextChangedListener(object : TextWatcher {
                             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
-                                // Nothing to do here
+                                // Nothing to do here, don't really understand this part
                             }
 
                             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
-                                // When the text changes, filter your data based on the search input
+                                // When the text changes, filter our data based on the search input
                                 val searchQuery = s.toString().lowercase(Locale.ROOT)
                                 val filteredList = searchList.filter { item ->
                                     item.name?.lowercase(
                                         Locale.ROOT)
                                         ?.contains(searchQuery) ?: true
                                 }
+                                //assign the filtered list to the recycler view
                                 val filteredPriceList = priceList(filteredList)
 
                                 itemPriceDifferenceAdapter2 = ItemPriceDifferenceAdapter(filteredPriceList)
@@ -97,7 +98,7 @@ class MainActivity : AppCompatActivity() {
                             }
 
                             override fun afterTextChanged(s: Editable?) {
-                                // Nothing to do here
+                                // Nothing to do here?
 
                             }
                         })

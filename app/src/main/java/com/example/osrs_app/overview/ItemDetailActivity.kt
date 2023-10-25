@@ -140,7 +140,7 @@ class ItemDetailActivity : AppCompatActivity() {
             val highPriceButton: Button = findViewById(R.id.highPriceButton)
             highPriceButton.setOnClickListener {
                 updateChart(ChartType.HIGH_PRICE, viewModel2.timeSeriesData.value, lineChart)
-                //create the markerview for the chart
+                //create the marker view for the chart
                 //to-do figure out a way to do this inside the update chart function
                 val mv = CustomMarkerView(
                     this,

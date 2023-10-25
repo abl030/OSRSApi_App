@@ -15,7 +15,7 @@ import com.github.mikephil.charting.formatter.ValueFormatter
 import java.util.Date
 import java.util.Locale
 
-
+//unused, changed the way the data is processed
 fun transformToModList(response: TimeSeriesResponse): TimeSeriesModList {
     val modList = response.data.map { entry ->
         TimeSeriesMod(
@@ -29,7 +29,7 @@ fun transformToModList(response: TimeSeriesResponse): TimeSeriesModList {
     }
     return TimeSeriesModList(data = modList)
 }
-
+//this gives you the historic highest and lowest prices. But in the end i didn't end up displaying this. Future release?
 fun extractHighLowValues(modList: TimeSeriesModList): Triple<Long?, Long?, Long?> {
 
     val highestTimestampPriceDiff = modList.data.maxByOrNull { it.timestampPriceDiff }?.timestampPriceDiff
@@ -39,21 +39,25 @@ fun extractHighLowValues(modList: TimeSeriesModList): Triple<Long?, Long?, Long?
     return Triple(highestAvgHighPrice, lowestAvgLowPrice, highestTimestampPriceDiff)
 }
 
-
+//takes in a set of time-series data with an enum describing which bit of the data to use. Fills the line chart with
+//the  appropriate data for the enum type.
 fun updateChart(chartType: ChartType, timeSeriesData: TimeSeriesResponse?, lineChart: LineChart) {
     if (timeSeriesData != null) {
 
-    //was originally going to filter by time, but there wasn't enough data for the low volume items
+        //was originally going to filter by time, but there wasn't enough data for the low volume items
+        //future versions would display the last five data points and have a button toggle to show all data points
         val filteredData = timeSeriesData.data
 
         val entries = ArrayList<Entry>()
 
+        //initialise the first non null price value, these are then used to keep track of the price difference over time
         val firstNonNullHighPrice = filteredData.firstOrNull { it.avgHighPrice != null }?.avgHighPrice?.toFloat()
         val firstNonNullLowPrice = filteredData.firstOrNull { it.avgLowPrice != null }?.avgLowPrice?.toFloat()
 
         var lastNonNullHighPrice = firstNonNullHighPrice
         var lastNonNullLowPrice = firstNonNullLowPrice
 
+        //iterate over every item in the list, adding the data to the chart dataset
         filteredData.forEachIndexed { _, dataItem ->
 
             val currentHighPrice = dataItem.avgHighPrice?.toFloat() ?: lastNonNullHighPrice
@@ -61,7 +65,7 @@ fun updateChart(chartType: ChartType, timeSeriesData: TimeSeriesResponse?, lineC
 
             when (chartType) {
                 ChartType.HIGH_PRICE -> dataItem.avgHighPrice?.let { highPrice ->
-                    // remember the ? if the value is null, it will not be added to the list
+                    // remember the ?, if the value is null, it will not be added to the list
                     entries.add(Entry(dataItem.timestamp.toFloat(), highPrice.toFloat()))
                 }
                 ChartType.LOW_PRICE -> dataItem.avgLowPrice?.let { lowPrice ->
@@ -88,8 +92,6 @@ fun updateChart(chartType: ChartType, timeSeriesData: TimeSeriesResponse?, lineC
             }
 
         }
-
-
 
         // Create and format the dataset and chart
         val lineDataSet = LineDataSet(entries,
@@ -122,19 +124,19 @@ fun updateChart(chartType: ChartType, timeSeriesData: TimeSeriesResponse?, lineC
         lineChart.description = null
 
         //this took so so long. I originally had an index as my x-axis, but that was not what I wanted. I wanted the timestamp!
+        //like 2 days long! But it uses my custom value formatter to convert the timestamp to a human readable string
         xAxis.valueFormatter = DataValueFormatter()
 
         //set the y-axis to the large value formatter, but with an edit to change all small e's to E's.
         lineChart.axisLeft.valueFormatter = LargeValueFormatterEdit()
         lineChart.axisRight.valueFormatter = LargeValueFormatterEdit()
 
+        //stop silly .1 gp prices for low value items. This is a bit of a hack, but it works.
         lineChart.axisLeft.granularity = 1f
         lineChart.axisRight.granularity = 1f
 
         //turn off labels, only need the markerView now.
         lineDataSet.setDrawValues(false)
-
-
 
         // Refresh the chart
         lineChart.invalidate()
@@ -143,7 +145,7 @@ fun updateChart(chartType: ChartType, timeSeriesData: TimeSeriesResponse?, lineC
 
 
 //function to work out the oldest and newest time in the list as well as the average time-step between each entry
-//essentially a test function to make sure everything is working. Not used in the app.
+//essentially a test function to make sure everything is working. Not used in the app - but used extensively throughout testing.
 fun timeSeriesStats(timeSeriesData: TimeSeriesResponse?): Pair<String?, String?> {
     if (timeSeriesData != null) {
     val limit = 0
@@ -155,6 +157,7 @@ fun timeSeriesStats(timeSeriesData: TimeSeriesResponse?): Pair<String?, String?>
 
         val stringBuilder = StringBuilder()
 
+        //no longer used average timestep to determine volume, because two sales could occur in one time step
         if (averageTimeStep != null && averageTimeStep > 0) {
             stringBuilder.append("Average high time step in minutes: ${averageHighTimeStepInMinutes(timeSeriesData)}. ")
             stringBuilder.append("with volume: ${highPriceVolume(timeSeriesData)}. ")
@@ -170,6 +173,7 @@ fun timeSeriesStats(timeSeriesData: TimeSeriesResponse?): Pair<String?, String?>
 
             return Pair(" ", stringBuilder.toString())
         } else {
+            //not actually used.
             return Pair("The average sale time is below the granularity of the time series data", "The dataset cannot determine volumes")
         }
     }
@@ -178,26 +182,31 @@ fun timeSeriesStats(timeSeriesData: TimeSeriesResponse?): Pair<String?, String?>
 
 
 //function taking in timeSeriesData and finding the number of times the high price has changed
+//these two pair functions I didn't end up using, took me a while to figure out that you could have two sales occurring in
+//the same time period.
 fun highPriceChanges(timeSeriesData: TimeSeriesResponse?): Int {
     val highPriceChanges = timeSeriesData?.data?.count { it.avgHighPrice != null }
     return highPriceChanges ?: 0
 }
-
+//function taking in timeSeriesData and finding the number of times the low price has changed
+//not used as above
 fun lowPriceChanges(timeSeriesData: TimeSeriesResponse?): Int {
     val lowPriceChanges = timeSeriesData?.data?.count { it.avgLowPrice != null }
     return lowPriceChanges ?: 0
 }
 
+//this is the better way to work out volume, as it takes into account the number of sales in every time period
+//takes in time series and returns an int of high price sales.
 fun highPriceVolume(timeSeriesData: TimeSeriesResponse?): Int {
     val highPriceVolume = timeSeriesData?.data?.sumOf { it.highPriceVolume }
     return highPriceVolume ?: 0
 }
-
+//takes in time series and returns an int of low price sales.
 fun lowPriceVolume(timeSeriesData: TimeSeriesResponse?): Int {
     val lowPriceVolume = timeSeriesData?.data?.sumOf { it.lowPriceVolume }
     return lowPriceVolume ?: 0
 }
-
+//takes in time series and returns a double the average time step between high price sales in minutes.
 fun averageHighTimeStepInMinutes(timeSeriesData: TimeSeriesResponse?): Double? {
     val oldestTime = timeSeriesData?.data?.filter { it.avgHighPrice != null }?.minByOrNull { it.timestamp }?.timestamp
     val newestTime = timeSeriesData?.data?.filter { it.avgHighPrice != null }?.maxByOrNull { it.timestamp }?.timestamp
@@ -206,7 +215,7 @@ fun averageHighTimeStepInMinutes(timeSeriesData: TimeSeriesResponse?): Double? {
     return (newestTime?.toDouble()?.minus(oldestTime?.toDouble() ?: 0.0))?.div(highPriceVolume)?.div(60.0)
 }
 
-
+//takes in time series and returns a double the average time step between low price sales in minutes.
 fun averageLowTimeStepInMinutes(timeSeriesData: TimeSeriesResponse?): Double? {
     val oldestTime = timeSeriesData?.data?.filter { it.avgLowPrice != null }?.minByOrNull { it.timestamp }?.timestamp
     val newestTime = timeSeriesData?.data?.filter { it.avgLowPrice != null }?.maxByOrNull { it.timestamp }?.timestamp
@@ -215,6 +224,7 @@ fun averageLowTimeStepInMinutes(timeSeriesData: TimeSeriesResponse?): Double? {
     return (newestTime?.toDouble()?.minus(oldestTime?.toDouble() ?: 0.0))?.div(lowPriceVolume)?.div(60.0)
 }
 
+//takes in time series and returns a string of the high to low ratio formatted to 2 decimal places.
 fun hightolowratioString(timeSeriesData: TimeSeriesResponse?): String {
     val highVol = highPriceVolume(timeSeriesData).toDouble()
     val lowVol = lowPriceVolume(timeSeriesData).toDouble()
@@ -222,11 +232,13 @@ fun hightolowratioString(timeSeriesData: TimeSeriesResponse?): String {
     return String.format("%.2f", highToLowRatio)
 }
 
+//format some text for the ratio
 fun formatRatio(ratio: String?): String {
     return "For every item you buy, you will be able to sell $ratio items"
 
 }
 
+//helpful explainers to better understand how items trade. This is for me to get my head around some of the stranger items to trade
 fun ratioWarnings(ratio: String?): String {
     return when {
         ratio != null && ratio.toDouble() > 1.5 -> "This item may by hard to buy at the low price, if bought it will easily sell"
@@ -235,6 +247,9 @@ fun ratioWarnings(ratio: String?): String {
     }
 }
 
+
+//takes in the time series and returns the theoretical max profit per flip
+//takes tax into account. Returns an int.
 fun profitPerFlipInt(timeSeriesData: TimeSeriesResponse?): Int? {
     val recentHighPrice = timeSeriesData?.data?.filter { it.avgHighPrice != null }?.maxByOrNull { it.timestamp }?.avgHighPrice
     val recentLowPrice = timeSeriesData?.data?.filter { it.avgLowPrice != null }?.maxByOrNull { it.timestamp }?.avgLowPrice
@@ -243,6 +258,8 @@ fun profitPerFlipInt(timeSeriesData: TimeSeriesResponse?): Int? {
     return (taxAmount.let { recentHighPrice?.minus(recentLowPrice!!)?.minus(it) })?.toInt()
 }
 
+//general function to find the tax value on the most highest high price.
+//this one is just a wrapper function to allow timeseries data to be used.
 fun findTaxValueTimeSeries(timeSeriesData: TimeSeriesResponse?): Int {
     val recentHighPrice = timeSeriesData?.data?.filter { it.avgHighPrice != null }?.maxByOrNull { it.timestamp }?.avgHighPrice
 
@@ -250,6 +267,7 @@ fun findTaxValueTimeSeries(timeSeriesData: TimeSeriesResponse?): Int {
 
 }
 
+//the actual tax value function that takes in an int and returns an int
 fun findTaxValueTimeInt(recentHighPrice: Int): Int{
     if (recentHighPrice <= 99) {
         return 0
@@ -262,7 +280,8 @@ fun findTaxValueTimeInt(recentHighPrice: Int): Int{
     }
 }
 
-
+//takes in the timeseries, accounts for tax.
+//returns an int of the potential theoretical profit per hour. Used only for testing.
 fun potentialProfitPerHour(timeSeriesData: TimeSeriesResponse?): Int? {
     val avgHighPriceTime = averageHighTimeStepInMinutes(timeSeriesData)
     val avgLowPriceTime = averageLowTimeStepInMinutes(timeSeriesData)
@@ -283,6 +302,8 @@ fun potentialProfitPerHour(timeSeriesData: TimeSeriesResponse?): Int? {
     }
 }
 
+//the meaty function, takes in time series and performs some basic analysis to suggest a buy price.
+//this function grew and grew as I had more ideas. really needs to be refactored.
 fun suggestedBuyOfferPriceInt(timeSeriesData: TimeSeriesResponse?): Int {
     val sortedData =
         timeSeriesData?.data?.filter { it.avgLowPrice != null }?.sortedByDescending { it.timestamp }
@@ -322,6 +343,7 @@ fun suggestedBuyOfferPriceInt(timeSeriesData: TimeSeriesResponse?): Int {
     }
 }
 
+//same as above using some rudimentary logic to determine a suggested sale price.
 fun suggestedSellOfferPriceInt(timeSeriesData: TimeSeriesResponse?): Int {
     val sortedData = timeSeriesData?.data?.filter { it.avgHighPrice != null }
         ?.sortedByDescending { it.timestamp }
@@ -346,8 +368,8 @@ fun suggestedSellOfferPriceInt(timeSeriesData: TimeSeriesResponse?): Int {
         return recentHighPrice.toInt()
     }
 
-    if (recentHighPrice != null) {
-        return if (recentHighPrice > secondNewestHighPrice!!) {
+    return if (recentHighPrice != null) {
+        if (recentHighPrice > secondNewestHighPrice!!) {
             (recentHighPrice - 100_000).toInt()
         } else {
             val calculatedSellOfferPrice =
@@ -355,21 +377,23 @@ fun suggestedSellOfferPriceInt(timeSeriesData: TimeSeriesResponse?): Int {
             kotlin.math.max(calculatedSellOfferPrice, recentHighPrice - 500000).toInt()
         }
     } else {
-        return 0
+        0
     }
 }
 
 
-
+//take in the time series data and 6 hour buy limit, utilises the above suggested buy/sell prices
+//takes into account tax and the 6 hour buy limit to return a profit per hour int.
 fun suggestedProfitPerHourInt(timeSeriesData: TimeSeriesResponse?, limit: Int): Int {
     val avgHighPriceTime = averageHighTimeStepInMinutes(timeSeriesData)
     val avgLowPriceTime = averageLowTimeStepInMinutes(timeSeriesData)
     val taxValue = findTaxValueTimeSeries(timeSeriesData)
 
-    // Calculate profit per item
+    // Calculate profit per item with our suggested prices. Take into account tax
     val profitPerItem = (suggestedSellOfferPriceInt(timeSeriesData) - suggestedBuyOfferPriceInt(timeSeriesData)) - taxValue
 
     // If limit is zero, just return profit per hour without the limit modifier
+    //limits are 0 for newer items in game, technically they are 'unknown'
     if (limit == 0) {
         return if (avgHighPriceTime != null) {
             if (avgHighPriceTime >= avgLowPriceTime!!) {
@@ -396,6 +420,7 @@ fun suggestedProfitPerHourInt(timeSeriesData: TimeSeriesResponse?, limit: Int): 
     }
 
     // Calculate number of items you can sell within 6 hours considering the turnover rate and limit
+    //just finds whichever one is smaller, the turnover rate or the limit
     val numItems = kotlin.math.min(turnoverRate * 360, limit.toDouble())
 
     // Calculate profit per hour with the limit modifier

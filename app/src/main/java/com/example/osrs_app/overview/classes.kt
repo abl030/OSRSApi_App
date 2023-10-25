@@ -47,7 +47,7 @@ data class CombinedItem(
 data class ItemPriceDifference(
     val name: String?,
     val priceDifference: Int,
-    val ROI: Double,
+    val roi: Double,
     val icon: String?,
     val itemId: String?,
     val highPrice: Int?,
